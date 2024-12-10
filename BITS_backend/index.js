@@ -4,7 +4,7 @@ const http = require("http");
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-require("./utils/InitialzeModels.js");
+
 const cors = require("cors");
 
 app.use(cors());

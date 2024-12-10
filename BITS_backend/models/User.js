@@ -4,21 +4,25 @@ module.exports = (sequelize, DataTypes) => {
     {
       user_id: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
         primaryKey: true,
+        autoIncrement: true,
+        allowNull: false,
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       password: {
         type: DataTypes.STRING,
-        required: true,
+        allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM("hospital", "patient"),
+        type: DataTypes.ENUM("Patient", "Hospital_User"),
         required: true,
       },
     },
     {
       tableName: "User",
-      timestamps: true,
     }
   );
   return User;
