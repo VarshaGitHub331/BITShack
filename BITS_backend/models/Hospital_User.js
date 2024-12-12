@@ -21,5 +21,13 @@ module.exports = (sequelize, DataTypes) => {
       required: true,
     },
   });
+  Hospital_User.associate = (models) => {
+    Hospital_User.belongsTo(models.Hospital, {
+      foreignKey: "hospital_id",
+    });
+    Hospital_User.belongsTo(models.User, {
+      foreignKey: "user_id",
+    });
+  };
   return Hospital_User;
 };

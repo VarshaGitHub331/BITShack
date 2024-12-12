@@ -32,6 +32,13 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Appointment", // Ensure this matches your actual table name if it's different
     }
   );
-
+  Appointment.associate = (models) => {
+    Appointment.belongsTo(models.Time_Slots, {
+      foreignKey: "slot_id",
+    });
+    Appointment.belongsTo(models.Patient, {
+      foreignKey: "patient_id",
+    });
+  };
   return Appointment;
 };

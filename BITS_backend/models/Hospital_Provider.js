@@ -28,5 +28,10 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Hospital_Provider",
     }
   );
+  Hospital_Provider.associate = (models) => {
+    Hospital_Provider.belongsTo(models.Hospital, {
+      foreignKey: "hospital_id",
+    });
+  };
   return Hospital_Provider;
 };

@@ -23,5 +23,16 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Hospital",
     }
   );
+  Hospital.associate = (models) => {
+    Hospital.hasMany(models.Hospital_User, {
+      foreignKey: "hospital_id",
+    });
+    Hospital.hasMany(models.Hospital_Provider, {
+      foreignKey: "hospital_id",
+    });
+    Hospital.hasMany(models.Time_Slots, {
+      foreignKey: "hospital_id",
+    });
+  };
   return Hospital;
 };

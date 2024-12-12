@@ -39,5 +39,13 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Time_Slots",
     }
   );
+  Time_Slots.associate = (models) => {
+    Time_Slots.belongsTo(models.Hospital, {
+      foreignKey: "hospital_id",
+    });
+    Time_Slots.belongsTo(models.Hospital_Provider, {
+      foreignKey: "provider_id",
+    });
+  };
   return Time_Slots;
 };

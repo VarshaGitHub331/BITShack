@@ -37,6 +37,16 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false, // Include if you don’t have `createdAt` or `updatedAt` fields
     }
   );
-
+  Patient.associate = (models) => {
+    Patient.belongsTo(models.User, {
+      foreignKey: "user_id",
+    });
+    Patient.hasMany(models.Appointment, {
+      foreignKey: "patient_id",
+    });
+    Patient.hasMany(models.Patient_Resource, {
+      foreignKey: "patient_id",
+    });
+  };
   return Patient;
 };

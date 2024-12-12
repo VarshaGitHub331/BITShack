@@ -35,5 +35,13 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "Patient_Resource",
     }
   );
+  Patient_Resource.associate = (models) => {
+    Patient_Resource.belongsTo(models.Patient, {
+      foreignKey: "user_id",
+    });
+    Patient_Resource.hasMany(models.FHIR_Resource, {
+      foreignKey: "patient_fhir_resource_id",
+    });
+  };
   return Patient_Resource;
 };

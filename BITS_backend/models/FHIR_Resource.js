@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false, // Corrected from 'required' to 'allowNull'
     },
   });
-
+  FHIR_Resource.associate = (models) => {
+    FHIR_Resource.belongsTo(models.Patient_Resource, {
+      foreignKey: "patient_fhir_resource_id",
+    });
+  };
   return FHIR_Resource;
 };
