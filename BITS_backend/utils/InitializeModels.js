@@ -1,5 +1,4 @@
 const models = require("../models"); // Adjust the path if necessary
-
 const {
   User,
   Patient,
@@ -30,3 +29,14 @@ sequelize
   .catch((e) => {
     console.log("Error syncing models:", e);
   });
+module.exports = {
+  User,
+  Patient,
+  Time_Slots,
+  Patient_Resource,
+  Hospital,
+  Hospital_Provider,
+  Hospital_User,
+  FHIR_Resource,
+  Appointment,
+};
