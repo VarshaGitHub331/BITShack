@@ -1,8 +1,13 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const userRouter = express.Router();
-const { User } = require("../utils/InitializeModels.js");
+const {
+  User,
+  Patient,
+  Hospital_User,
+} = require("../utils/InitializeModels.js");
 const SECRET_KEY = "bits and bytes";
+
 console.log(User);
 userRouter.post("/register", async (req, res, next) => {
   const { email, password, role } = req.body;
