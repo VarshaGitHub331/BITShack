@@ -1,11 +1,18 @@
 const { Hospital_User } = require("../utils/InitializeModels");
-const { Hospital } = require("../utils/InitializeModels");
+const { Hospital, User } = require("../utils/InitializeModels");
 
 const registerHospital = async (req, res, next) => {
-  const { hospital_name, details, Hospital_User } = req.body;
+  const { hospital_name, details } = req.body;
   try {
-    const hospital = await Hospital.create({ hospital_name, details });
-    res.status(200).json(hospital);
+    const checkHospital = await Hospital.findOne({ where: { hospital_name } });
+    if (checkHospital) res.status(403).json("Hospital already exists");
+    const hospital = await Hospital.create(
+      { hospital_name, details },
+      { raw: true }
+    );
+    console.log(hospital);
+    req.body.hospital_id = hospital.hospital_id;
+    next();
   } catch (e) {
     console.log(e);
   }
@@ -32,16 +39,16 @@ const addLocation = async (req, res, next) => {
     next(e);
   }
 };
-const createAdmin = async (req, res, next) => {
+const createAdminUser = async (req, res, next) => {
   try {
-    const { hospital_id, user_id } = req.body;
+    console.log(req.body);
+    const { hospital_id, email, password } = req.body;
 
     // Check if the user has the role 'hospital_user' in the users table
-    const user = await User.findOne({
-      where: {
-        user_id: user_id,
-        role: "hospital_user", // Ensure the role is 'hospital_user'
-      },
+    const user = await User.create({
+      email,
+      password,
+      role: "Hospital_User",
     });
 
     if (!user) {
@@ -54,7 +61,7 @@ const createAdmin = async (req, res, next) => {
     // Create the admin if the user is valid
     const hospitalAdmin = await Hospital_User.create({
       hospital_id,
-      user_id,
+      user_id: user.user_id,
       hospital_role: "admin",
     });
 
@@ -64,4 +71,4 @@ const createAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { registerHospital, addLocation, createAdmin };
+module.exports = { registerHospital, addLocation, createAdminUser };
