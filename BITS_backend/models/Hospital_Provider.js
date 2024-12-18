@@ -6,6 +6,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
+        reference: {
+          model: "User",
+          key: "user_id",
+        },
       },
       hospital_id: {
         type: DataTypes.INTEGER,

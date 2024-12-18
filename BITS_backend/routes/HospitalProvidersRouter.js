@@ -1,12 +1,15 @@
 const express = require("express");
-const { registerHospitalProvider, createTimeSlots } = require("../controllers/HospitalProvidersController");
+const {
+  registerHospitalProvider,
+  createTimeSlots,
+} = require("../controllers/HospitalProvidersController");
 
 const router = express.Router();
 
 // Register a new hospital provider
-router.post("/api/hospital_providers/register", registerHospitalProvider);
+router.post("/register", registerHospitalProvider);
 
 // Create time slots for a hospital provider
-router.post("/api/hospital_providers/time_slots", createTimeSlots);
+router.post("/timeSlots", createTimeSlots);
 
 module.exports = router;

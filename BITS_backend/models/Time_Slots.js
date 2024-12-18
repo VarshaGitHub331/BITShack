@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       slot_id: {
         type: DataTypes.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
       },
       hospital_id: {
