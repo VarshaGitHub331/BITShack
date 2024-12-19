@@ -19,6 +19,7 @@ app.use("/patient", patientRouter);
 app.use("/hospital", hospitalRouter);
 app.use("/hospitalUser", HospitalUserRouter); // Mount the router here*/
 app.use("/hospitalProvider", HospitalProviderRouter);
+
 // Start the server
 server.listen(3001, () => {
   console.log("Server is running on http://localhost:3001");

@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TIME,
         allowNull: false,
       },
+      locked_until: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       tableName: "Time_Slots",

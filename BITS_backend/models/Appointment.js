@@ -24,7 +24,12 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       status: {
-        type: DataTypes.ENUM("Cancelled", "Rescheduled", "Scheduled"),
+        type: DataTypes.ENUM(
+          "Cancelled",
+          "Rescheduled",
+          "Confirmed",
+          "Pending"
+        ),
         allowNull: false,
       },
     },

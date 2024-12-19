@@ -11,7 +11,6 @@ const {
   Appointment,
 } = models; // Ensure you're destructuring correctly from the imported models
 const sequelize = models.sequelize;
-
 // Ensure associations are defined
 Object.keys(models).forEach((modelName) => {
   if (models[modelName].associate) {
