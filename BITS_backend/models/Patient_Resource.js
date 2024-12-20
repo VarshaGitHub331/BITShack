@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       created_at: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: DataTypes.NOW,
       },
       updated_at: {
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
   );
   Patient_Resource.associate = (models) => {
     Patient_Resource.belongsTo(models.Patient, {
-      foreignKey: "user_id",
+      foreignKey: "patient_id",
     });
     Patient_Resource.hasMany(models.FHIR_Resource, {
       foreignKey: "patient_fhir_resource_id",
