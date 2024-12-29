@@ -2,7 +2,7 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-
+require("dotenv").config();
 const UsersRouter = require("./routes/UsersRouter");
 const patientRouter = require("./routes/PatientRouter");
 const hospitalRouter = require("./routes/HospitalRouter");
