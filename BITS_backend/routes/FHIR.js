@@ -1,11 +1,10 @@
 const express = require("express");
 const {
   Patient_Resource,
-  Appointment_Observation,
+  Appointment_Encounter,
 } = require("../utils/InitializeModels");
 const router = express.Router();
 const axios = require("axios");
-const Appoinement_Observation = require("../models/Appoinement_Observation");
 
 // Register a new hospital provider
 router.post("/getPatientResource", async function (req, res, next) {
@@ -51,6 +50,10 @@ router.post("/storeObservation", async function (req, res, next) {
     where: { patient_id },
     raw: true,
   });
+  const appointment_encounter = await Appointment_Encounter.findOne({
+    where: { appointment_id: appointment_id },
+    raw: true,
+  });
 
   if (!patient_fhir_resource_id) {
     return res.status(404).send({ message: "Patient not found" });
@@ -91,6 +94,9 @@ router.post("/storeObservation", async function (req, res, next) {
         subject: {
           reference: `Patient/${fhir_patient_id}`,
         },
+        encounter: {
+          reference: `Encounter/${appointment_encounter.encounter_id}`, // Link the encounter here
+        },
         effectiveDateTime: new Date().toISOString(),
         valueQuantity: {
           value: parseFloat(obs.value),
@@ -119,10 +125,6 @@ router.post("/storeObservation", async function (req, res, next) {
 
         console.log("FHIR Response:", fhirResponse.data);
         response.push(fhirResponse.data);
-        await Appointment_Observation.create({
-          appointment_id,
-          observation_id: fhirResponse.data.id,
-        });
       } catch (error) {
         console.error("Error saving observation:", obs);
         console.error(error.message);

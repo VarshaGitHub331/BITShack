@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         allowNull: false,
       },
+      gender: {
+        type: DataTypes.ENUM("male", "female", "Other"),
+        allowNull: false,
+      },
       provider_name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -26,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       specialization: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      details: {
+        type: DataTypes.JSON,
+        allowNull: true,
       },
     },
     {

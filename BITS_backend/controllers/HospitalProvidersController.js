@@ -1,39 +1,156 @@
 const { Sequelize, sequelize } = require("../models/index.js");
+
 const {
   Hospital_Provider,
   Time_Slots,
   Hospital,
   Appointment,
   User,
+  Provider_Resource,
+  Patient_Resource,
+  Appointment_Encounter,
 } = require("../utils/InitializeModels");
+const axios = require("axios");
 const moment = require("moment");
-
-// Register a new hospital provider
 const registerHospitalProvider = async (req, res, next) => {
   try {
-    const { name, email, password, hospital_id, specialization } = req.body;
+    const {
+      name,
+      email,
+      password,
+      hospital_id,
+      specialization,
+      details,
+      gender,
+    } = req.body;
 
     // Validate input
     if (!name || !email || !password || !hospital_id) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    // Extract first and last name from full name
+    const [first_name, ...last_nameArray] = name.split(" ");
+    const last_name = last_nameArray.join(" ");
+
     // Check if the hospital exists
     const hospital = await Hospital.findByPk(hospital_id);
     if (!hospital) {
       return res.status(404).json({ error: "Hospital not found" });
     }
+
+    // Create user and hospital provider
     const user = await User.create({
       email,
       password,
       role: "Hospital_Provider",
     });
-    // Create the hospital provider (ensure passwords are hashed in the model)
+
+    const practitionerDetails = {
+      phone: details?.phone || "Not provided",
+      email: details?.email || "Not provided",
+      addressLine1: details?.addressLine1 || "Not provided",
+      addressLine2: details?.addressLine2 || "Not provided",
+      city: details?.city || "Unknown",
+      state: details?.state || "Unknown",
+      zipCode: details?.zipCode || "00000",
+      country: details?.country || "Unknown",
+      qualifications: details?.qualifications || "Not provided",
+    };
+
     const hospitalProvider = await Hospital_Provider.create({
       provider_name: name,
-      specialization,
+      specialization: specialization || "General Practitioner",
       provider_id: user.user_id,
       hospital_id,
+      gender,
+      details: practitionerDetails,
+    });
+
+    // FHIR Practitioner data
+    const fhir_practitioner_data = {
+      resourceType: "Practitioner",
+      name: [
+        {
+          use: "official",
+          family: last_name,
+          given: [first_name],
+        },
+      ],
+      gender: gender || "unknown",
+      telecom: [
+        {
+          system: "phone",
+          value: practitionerDetails.phone,
+          use: "work",
+        },
+        {
+          system: "email",
+          value: practitionerDetails.email,
+          use: "work",
+        },
+      ],
+      address: [
+        {
+          use: "work",
+          line: [
+            practitionerDetails.addressLine1,
+            practitionerDetails.addressLine2,
+          ],
+          city: practitionerDetails.city,
+          state: practitionerDetails.state,
+          postalCode: practitionerDetails.zipCode,
+          country: practitionerDetails.country,
+        },
+      ],
+      qualification: [
+        {
+          identifier: [
+            {
+              system: "http://example.org/licenses",
+              value: practitionerDetails.qualifications,
+            },
+          ],
+          code: {
+            coding: [
+              {
+                system: "http://hl7.org/fhir/v2/0360/2.7",
+                code: specialization,
+                display: "Specialization",
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    let fhirResponse;
+    try {
+      fhirResponse = await axios.post(
+        "https://fhir.simplifier.net/BITS-HACK/Practitioner",
+        fhir_practitioner_data,
+        {
+          headers: {
+            "Content-Type": "application/fhir+json",
+            Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(
+        "FHIR Practitioner creation failed:",
+        error.response?.data || error
+      );
+      return res
+        .status(500)
+        .json({ error: "Failed to create FHIR Practitioner resource" });
+    }
+
+    // Save FHIR resource to database
+    await Provider_Resource.create({
+      provider_fhir_resource_id: fhirResponse.data.id,
+      provider_id: hospitalProvider.provider_id,
+      provider_record: fhirResponse.data,
     });
 
     res.status(200).json(hospitalProvider);
@@ -152,7 +269,7 @@ const bookAppointment = async (req, res, next) => {
 };
 
 const confirmAppointment = async (req, res, next) => {
-  const { user_id, appointment_id } = req.body;
+  const { user_id, appointment_id, reason = "Consultation" } = req.body;
 
   try {
     // Step 1: Find the appointment by ID
@@ -186,6 +303,81 @@ const confirmAppointment = async (req, res, next) => {
       // Step 4: Save the appointment and time slot
       await foundAppointment.save();
       await timeSlot.save();
+      const patient_fhir_resource = await Patient_Resource.findOne({
+        attributes: ["patient_fhir_resource_id"],
+        where: { patient_id: foundAppointment.patient_id },
+        raw: true,
+      });
+      console.log(patient_fhir_resource);
+      const provider = await Time_Slots.findOne({
+        attributes: ["provider"],
+        where: {
+          slot_id: foundAppointment.slot_id,
+        },
+        raw: true,
+      });
+      const provider_fhir_resource = await Provider_Resource.findOne({
+        attributes: ["provider_fhir_resource_id"],
+        where: { provider_id: provider.provider },
+        raw: true,
+      });
+      const slot = await Time_Slots.findOne({
+        attributes: ["slot_date", "start_time", "end_time"],
+        where: {
+          slot_id: foundAppointment.slot_id,
+        },
+        raw: true,
+      });
+      const fhir_encounter_data = {
+        resourceType: "Encounter",
+        status: "planned", // Appointment status can be "planned" until confirmed
+        class: {
+          system: "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          code: "AMB", // Ambulatory (outpatient) encounter
+          display: "ambulatory",
+        },
+        subject: {
+          reference: `Patient/${patient_fhir_resource.patient_fhir_resource_id}`, // Reference to Patient resource
+        },
+        participant: [
+          {
+            individual: {
+              reference: `Practitioner/${provider_fhir_resource.provider_fhir_resource_id}`, // Reference to Practitioner resource
+            },
+          },
+        ],
+        reasonCode: [
+          {
+            coding: [
+              {
+                system: "http://snomed.info/sct",
+                code: "185347001", // Example SNOMED code for reason
+                display: reason,
+              },
+            ],
+            text: reason,
+          },
+        ],
+        period: {
+          start: slot.slot_date, // Appointment date as start
+        },
+      };
+      const fhirResponse = await axios.post(
+        "https://fhir.simplifier.net/BITS-HACK/Encounter",
+        fhir_encounter_data,
+        {
+          headers: {
+            "Content-Type": "application/fhir+json",
+            Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+          },
+        }
+      );
+
+      console.log(fhirResponse.data);
+      await Appointment_Encounter.create({
+        encounter_id: fhirResponse.data.id,
+        appointment_id: foundAppointment.appointment_id, // Link the appointment with the encounter
+      });
 
       return res
         .status(200)

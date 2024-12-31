@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("True", "False"),
         allowNull: false,
       },
+      slot_date: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
       start_time: {
         type: DataTypes.TIME,
         allowNull: false,

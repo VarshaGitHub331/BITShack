@@ -9,10 +9,12 @@ const {
   Hospital_User,
   FHIR_Resource,
   Appointment,
-  Appointment_Observation,
+  Appointment_Encounter,
+  Provider_Resource,
 } = models; // Ensure you're destructuring correctly from the imported models
 const sequelize = models.sequelize;
-
+Appointment_Encounter.sync({ force: true });
+console.log(Appointment_Encounter);
 // Ensure associations are defined
 Object.keys(models).forEach((modelName) => {
   if (models[modelName].associate) {
@@ -40,5 +42,6 @@ module.exports = {
   Hospital_User,
   FHIR_Resource,
   Appointment,
-  Appointment_Observation,
+  Appointment_Encounter,
+  Provider_Resource,
 };
