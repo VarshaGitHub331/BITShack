@@ -13,8 +13,7 @@ const {
   Provider_Resource,
 } = models; // Ensure you're destructuring correctly from the imported models
 const sequelize = models.sequelize;
-Appointment_Encounter.sync({ force: true });
-console.log(Appointment_Encounter);
+
 // Ensure associations are defined
 Object.keys(models).forEach((modelName) => {
   if (models[modelName].associate) {

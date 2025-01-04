@@ -14,8 +14,6 @@ const registerPatient = async (req, res, next) => {
       state: details?.state || "Unknown",
       zipCode: details?.zipCode || "00000",
       country: details?.country || "Unknown",
-      phone: details?.phone || "Not provided",
-      email: details?.email || "Not provided",
     };
 
     const patient = await Patient.create({

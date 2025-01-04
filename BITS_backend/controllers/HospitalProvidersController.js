@@ -267,6 +267,7 @@ const bookAppointment = async (req, res, next) => {
       .json({ error: "Something went wrong while booking the appointment." });
   }
 };
+const removeAppointment = async (req, res, next) => {};
 
 const confirmAppointment = async (req, res, next) => {
   const { user_id, appointment_id, reason = "Consultation" } = req.body;
