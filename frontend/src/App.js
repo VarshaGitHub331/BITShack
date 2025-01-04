@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import NavBar from "./components/NavBar/NavBar";
 import UserRegister from "./pages/Register/Regsiter";
 import PatientRegister from "./pages/PatientRegister/PatientRegsiter";
-
+import HospitalRegister from "./pages/HospitalRegister/HopsitalRegister";
 function App() {
   const Layout = () => {
     return (
@@ -28,7 +28,7 @@ function App() {
         },
         {
           path: "/hospitalRegister",
-          element: <h3>Hospital</h3>,
+          element: <HospitalRegister />,
         },
         {
           path: "/providerRegsiter",

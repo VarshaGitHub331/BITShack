@@ -44,6 +44,7 @@ export default function NavBar() {
               className="hover:text-purple-500 cursor-pointer"
               onClick={(e) => {
                 UserLogout();
+                navigate("/");
               }}
             >
               Logout

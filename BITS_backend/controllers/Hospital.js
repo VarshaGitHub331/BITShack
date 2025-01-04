@@ -1,13 +1,14 @@
 const { Hospital_User } = require("../utils/InitializeModels");
 const { Hospital, User } = require("../utils/InitializeModels");
-
+const jwt = require("jsonwebtoken");
+const SECRET_KEY = "bitsnpieces"; // Replace with a secure key
 const registerHospital = async (req, res, next) => {
-  const { hospital_name, details } = req.body;
+  const { hospital_name, details, hospital_regno } = req.body;
   try {
     const checkHospital = await Hospital.findOne({ where: { hospital_name } });
     if (checkHospital) res.status(403).json("Hospital already exists");
     const hospital = await Hospital.create(
-      { hospital_name, details },
+      { hospital_name, details, hospital_regno },
       { raw: true }
     );
     console.log(hospital);
@@ -64,8 +65,20 @@ const createAdminUser = async (req, res, next) => {
       user_id: user.user_id,
       hospital_role: "admin",
     });
-
-    res.status(200).json(hospitalAdmin);
+    const token = jwt.sign(
+      { userId: user.user_id, role: user.role },
+      SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.status(201).json({
+      user: {
+        user_id: user.user_id,
+        token: token,
+        role: user.role,
+      },
+    });
   } catch (e) {
     next(e);
   }

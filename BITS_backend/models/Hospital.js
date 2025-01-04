@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      hospital_regno: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       location: {
         type: DataTypes.GEOMETRY("POINT"),
         allowNull: true,

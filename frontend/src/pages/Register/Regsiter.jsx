@@ -34,11 +34,9 @@ export default function UserRegister() {
       console.log(response);
       UserLogin(response.data.user);
       setLoading(false);
-      if (role == "Patient") {
+      if (role === "Patient") {
         navigate("/patientRegister");
-      } else if (role == "Hospital") {
-        navigate("/hospitalRegister");
-      } else if (role == "Provider") {
+      } else if (role === "Provider") {
         navigate("/providerRegister");
       } else navigate("/hospitalUserRegister");
     } catch (e) {
