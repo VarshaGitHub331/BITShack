@@ -4,6 +4,7 @@ import NavBar from "./components/NavBar/NavBar";
 import UserRegister from "./pages/Register/Regsiter";
 import PatientRegister from "./pages/PatientRegister/PatientRegsiter";
 import HospitalRegister from "./pages/HospitalRegister/HopsitalRegister";
+import ProviderRegister from "./pages/ProviderRegister/ProviderRegsiter";
 function App() {
   const Layout = () => {
     return (
@@ -31,8 +32,8 @@ function App() {
           element: <HospitalRegister />,
         },
         {
-          path: "/providerRegsiter",
-          element: <h3>Provider</h3>,
+          path: "/providerRegister",
+          element: <ProviderRegister />,
         },
         {
           path: "/hospitalUserRegister",

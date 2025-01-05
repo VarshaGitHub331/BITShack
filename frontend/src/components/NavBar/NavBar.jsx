@@ -9,7 +9,7 @@ export default function NavBar() {
   const navigate = useNavigate();
   return (
     <nav className="bg-white text-purple-500">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+      <div className="container mx-auto px-6 py-6 flex justify-between items-center">
         {/* Logo */}
         <div className="text-xl font-bold">MediCare</div>
 
@@ -52,7 +52,7 @@ export default function NavBar() {
           )}
         </ul>
       </div>
-      <hr className="border-t-2 border-gray-400 w-full" />
+      <hr className="border-t-2 border-gray-300 w-full" />
     </nav>
   );
 }
