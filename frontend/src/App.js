@@ -5,15 +5,25 @@ import UserRegister from "./pages/Register/Regsiter";
 import PatientRegister from "./pages/PatientRegister/PatientRegsiter";
 import HospitalRegister from "./pages/HospitalRegister/HopsitalRegister";
 import ProviderRegister from "./pages/ProviderRegister/ProviderRegsiter";
+import Footer from "./components/Footer/Footer";
 function App() {
   const Layout = () => {
     return (
-      <div className="App">
+      <div className="flex flex-col min-h-screen">
+        {/* Navigation Bar */}
         <NavBar />
-        <Outlet />
+
+        {/* Main Content */}
+        <div className="flex-grow">
+          <Outlet />
+        </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
     );
   };
+
   const router = createBrowserRouter([
     {
       path: "/",

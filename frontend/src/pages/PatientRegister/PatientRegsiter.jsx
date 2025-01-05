@@ -19,7 +19,7 @@ export default function App() {
     country: "",
   });
   const [loading, setLoading] = useState(false);
-  const { userState } = useAuthContext();
+  const { userState, UpdateName } = useAuthContext();
   const { user_id, token } = userState;
 
   const nextStep = () => setCurrentStep((prev) => prev + 1);
@@ -61,6 +61,7 @@ export default function App() {
         }
       );
       console.log(response);
+      UpdateName(response.data.first_name);
       alert("done patient registration");
     } catch (error) {
       console.error("Error:", error);

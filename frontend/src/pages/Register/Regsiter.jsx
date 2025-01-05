@@ -2,9 +2,9 @@ import { useState } from "react";
 import axios from "axios";
 import { useAuthContext } from "../../contexts/AuthContext";
 import ReactLoading from "react-loading";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useNavigate } from "react-router-dom";
+
 export default function UserRegister() {
   const { UserLogin } = useAuthContext();
   const [loading, setLoading] = useState(false);
@@ -14,8 +14,9 @@ export default function UserRegister() {
   const [searchParams] = useSearchParams();
   const role = searchParams?.get("role");
   const navigate = useNavigate();
-  async function RegisterUser() {
-    alert("called");
+
+  async function RegisterUser(e) {
+    e.preventDefault(); // Prevent default form submission behavior
     try {
       setLoading(true);
       const response = await axios.post(
@@ -32,17 +33,16 @@ export default function UserRegister() {
         }
       );
       console.log(response);
-      UserLogin(response.data.user);
+      UserLogin(response.data.user); // Log in the user
       setLoading(false);
-      if (role === "Patient") {
-        navigate("/patientRegister");
-      } else if (role === "Provider") {
-        navigate("/providerRegister");
-      } else navigate("/hospitalUserRegister");
+      alert("Navigating to patient register");
+      navigate("/patientRegister"); // Navigate to patient register
     } catch (e) {
-      console.log(e);
+      console.error("Registration failed:", e);
+      setLoading(false);
     }
   }
+
   return (
     <>
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -53,7 +53,7 @@ export default function UserRegister() {
           <h2 className="text-md font-bold text-purple-500 text-center mb-6">
             Sign Up
           </h2>
-          <form>
+          <form onSubmit={RegisterUser}>
             <div className="w-full h-full flex justify-center items-center">
               {loading && <ClipLoader color="purple" size={20} />}
             </div>
@@ -68,11 +68,10 @@ export default function UserRegister() {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-200"
+                required
               />
             </div>
             <div className="mb-8">
@@ -86,19 +85,15 @@ export default function UserRegister() {
                 type="password"
                 id="password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-200"
+                required
               />
             </div>
             <button
               type="submit"
               className="w-full bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-1"
-              onClick={(e) => {
-                RegisterUser();
-              }}
             >
               Sign Up
             </button>
