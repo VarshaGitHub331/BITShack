@@ -6,20 +6,26 @@ import PatientRegister from "./pages/PatientRegister/PatientRegsiter";
 import HospitalRegister from "./pages/HospitalRegister/HopsitalRegister";
 import ProviderRegister from "./pages/ProviderRegister/ProviderRegsiter";
 import Footer from "./components/Footer/Footer";
+
 function App() {
   const Layout = () => {
     return (
-      <div className="flex flex-col min-h-screen">
-        {/* Navigation Bar */}
-        <NavBar />
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
 
         {/* Main Content */}
-        <div className="flex-grow">
-          <Outlet />
-        </div>
+        <div className="flex flex-col flex-grow">
+          {/* Navigation Bar */}
+          <NavBar />
 
-        {/* Footer */}
-        <Footer />
+          {/* Page Content */}
+          <div className="flex-grow p-6 bg-gray-100">
+            <Outlet />
+          </div>
+
+          {/* Footer */}
+          <Footer />
+        </div>
       </div>
     );
   };
