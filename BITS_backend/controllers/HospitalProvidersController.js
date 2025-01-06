@@ -12,7 +12,12 @@ const {
 } = require("../utils/InitializeModels");
 const axios = require("axios");
 const moment = require("moment");
+const SECRET_KEY = "bitsnpieces"; // Replace with a secure key
+const jwt = require("jsonwebtoken");
+
 const registerHospitalProvider = async (req, res, next) => {
+  console.log("called");
+  console.log(req.body);
   try {
     const {
       name,
@@ -153,7 +158,22 @@ const registerHospitalProvider = async (req, res, next) => {
       provider_record: fhirResponse.data,
     });
 
-    res.status(200).json(hospitalProvider);
+    const token = jwt.sign(
+      { userId: hospitalProvider.provider_id, role: "Hospital_Provider" },
+      SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.status(201).json({
+      user: {
+        name: hospitalProvider.provider_name,
+        user_id: hospitalProvider.provider_id,
+        token: token,
+        role: "Hospital_Provider",
+      },
+    });
+    res.status(200).json({ user: hospitalProvider });
   } catch (e) {
     console.error(e);
     next(e); // Pass the error to the error-handling middleware
@@ -181,7 +201,7 @@ const createTimeSlots = async (req, res, next) => {
       provider: provider_id,
       start_time,
       end_time,
-      date,
+      slot_date: date,
       hospital_id: hospitalProvider.hospital_id,
       isAvailable: "true",
     });
@@ -190,6 +210,42 @@ const createTimeSlots = async (req, res, next) => {
   } catch (e) {
     console.error(e);
     next(e); // Pass the error to the error-handling middleware
+  }
+};
+const updateTimeSlots = async (req, res, next) => {
+  console.log("Here");
+  console.log(req.body);
+  try {
+    const { slot_id, start_time, end_time, slot_date } = req.body;
+
+    // Check if the hospital provider exists
+    const timeSlot = await Time_Slots.findByPk(slot_id);
+    if (!timeSlot || timeSlot.isAvailable === false) {
+      return res
+        .status(404)
+        .json({ error: "Time Slot not found or not available" });
+    }
+
+    // Update the time slot
+    timeSlot.start_time = start_time;
+    timeSlot.end_time = end_time;
+    timeSlot.slot_date = slot_date;
+    await timeSlot.save();
+
+    res.status(200).json(timeSlot);
+  } catch (e) {
+    console.error(e);
+    next(e); // Pass the error to the error-handling middleware
+  }
+};
+const deleteTimeSlots = async (req, res, next) => {
+  const { slot_id } = req.query;
+  try {
+    await Time_Slots.destroy({ where: { slot_id } });
+    console.log("Deleted");
+  } catch (e) {
+    console.error(e);
+    next(e);
   }
 };
 const bookAppointment = async (req, res, next) => {
@@ -394,10 +450,19 @@ const confirmAppointment = async (req, res, next) => {
     });
   }
 };
-
+const fetchTimeSlots = async (req, res, next) => {
+  const { provider_id } = req.query;
+  const time_slots = await Time_Slots.findAll({
+    where: { provider: provider_id },
+  });
+  return res.status(200).json(time_slots);
+};
 module.exports = {
   registerHospitalProvider,
   createTimeSlots,
   bookAppointment,
   confirmAppointment,
+  updateTimeSlots,
+  fetchTimeSlots,
+  deleteTimeSlots,
 };

@@ -43,7 +43,7 @@ const addLocation = async (req, res, next) => {
 const createAdminUser = async (req, res, next) => {
   try {
     console.log(req.body);
-    const { hospital_id, email, password } = req.body;
+    const { hospital_id, email, password, hospital_name } = req.body;
 
     // Check if the user has the role 'hospital_user' in the users table
     const user = await User.create({
@@ -74,6 +74,7 @@ const createAdminUser = async (req, res, next) => {
     );
     res.status(201).json({
       user: {
+        name: hospital_name,
         user_id: user.user_id,
         token: token,
         role: user.role,
@@ -83,5 +84,18 @@ const createAdminUser = async (req, res, next) => {
     next(e);
   }
 };
-
-module.exports = { registerHospital, addLocation, createAdminUser };
+const getHospitals = async (req, res, next) => {
+  try {
+    const hospitals = await Hospital.findAll({ raw: true });
+    res.status(200).json(hospitals);
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+};
+module.exports = {
+  registerHospital,
+  addLocation,
+  createAdminUser,
+  getHospitals,
+};
