@@ -6,4 +6,5 @@ async function fetchTimeSlots({ provider_id }) {
   console.log(response);
   return response.data;
 }
+
 export { fetchTimeSlots };
