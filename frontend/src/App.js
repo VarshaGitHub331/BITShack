@@ -7,6 +7,7 @@ import HospitalRegister from "./pages/HospitalRegister/HopsitalRegister";
 import ProviderRegister from "./pages/ProviderRegister/ProviderRegsiter";
 import Footer from "./components/Footer/Footer";
 import CreateTimeSlot from "./pages/CreateTimeSlots/CreateTimeSlots";
+import DisplayTimeSlots from "./pages/DisplayTimeSlots/DisplayTimeSlots";
 
 function App() {
   const Layout = () => {
@@ -56,6 +57,11 @@ function App() {
           path: "/create-timeslot",
           element: <CreateTimeSlot />,
         },
+        {
+          path: "/view-timeslots",
+          element: <DisplayTimeSlots />,
+        },
+
         {
           path: "/hospitalUserRegister",
           element: <h3>Hospital User</h3>,
