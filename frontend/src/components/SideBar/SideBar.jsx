@@ -7,6 +7,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
 function SideBar({ setOpenSidebar }) {
   const { userState, UserLogin, UserLogout } = useAuthContext();
@@ -56,6 +57,39 @@ function SideBar({ setOpenSidebar }) {
             </li>
           </>
         )}
+        {role === "Patient" && (
+          <>
+            <li>
+              <Link
+                to="/view-providers"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faBook} className="h-4 w-4" />
+                All Providers
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/book-appointment"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faCalendarPlus} className="h-4 w-4" />
+                Book Appointment
+              </Link>
+            </li>
+          </>
+        )}
+        <li>
+          <Link
+            onClick={(e) => {
+              UserLogout();
+            }}
+            className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+          >
+            <FontAwesomeIcon icon={faRightFromBracket} className="h-4 w-4" />
+            Logout
+          </Link>
+        </li>
       </ul>
 
       {/* Close Button */}

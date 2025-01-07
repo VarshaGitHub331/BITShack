@@ -3,8 +3,10 @@ import StepOne from "./StepOne";
 import StepTwo from "./StepTwo";
 import axios from "axios";
 import { useAuthContext } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 export default function App() {
   const SERVER = process.env.REACT_APP_SERVER_URL;
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     first_name: "",
@@ -33,7 +35,7 @@ export default function App() {
   };
 
   const handleSubmit = async () => {
-    alert("called");
+    
     setLoading(true);
     try {
       const response = await axios.post(
@@ -62,10 +64,11 @@ export default function App() {
       );
       console.log(response);
       UpdateName(response.data.first_name);
-      alert("done patient registration");
+      
+      navigate("/");
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred during registration.");
+     
     }
     setLoading(false);
   };

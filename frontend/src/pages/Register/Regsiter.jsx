@@ -35,7 +35,6 @@ export default function UserRegister() {
       console.log(response);
       UserLogin(response.data.user); // Log in the user
       setLoading(false);
-      alert("Navigating to patient register");
       navigate("/patientRegister"); // Navigate to patient register
     } catch (e) {
       console.error("Registration failed:", e);

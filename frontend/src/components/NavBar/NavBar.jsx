@@ -4,12 +4,15 @@ import { useAuthContext } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { FaBars } from "react-icons/fa";
 import Sidebar from "../SideBar/SideBar";
+
 export default function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
   const { userState, UserLogin, UserLogout } = useAuthContext();
   const [openSidebar, setOpenSidebar] = useState(false);
+  const [showLinks, setShowLinks] = useState(false);
   console.log(userState);
   const navigate = useNavigate();
+
   return (
     <>
       <nav className="bg-white text-purple-500">
@@ -31,31 +34,31 @@ export default function NavBar() {
 
             {/* Always visible */}
             {!userState.user_id && (
-              <>
+              <div className="relative">
                 <li
                   className="hover:text-purple-500 cursor-pointer"
                   onClick={(e) => {
-                    navigate("/register");
+                    setShowLinks(!showLinks);
                   }}
                 >
                   Register
                 </li>
-                <li className="hover:text-purple-500 cursor-pointer">
-                  Sign In
-                </li>
-              </>
+                {showLinks && (
+                  <ul className="absolute  mt-2  bg-white shadow-md rounded-md p-2 border border-gray-200 text-sm">
+                    <li className="hover:text-purple-500 cursor-pointer">
+                      <Link to="/register?role=Patient">User</Link>
+                    </li>
+                    <li className="hover:text-purple-500 cursor-pointer">
+                      <Link to="/providerRegister">Provider</Link>
+                    </li>
+                    <li className="hover:text-purple-500 cursor-pointer">
+                      <Link to="/hospitalRegister">Hospital Admin</Link>
+                    </li>
+                  </ul>
+                )}
+              </div>
             )}
-            {userState?.name && (
-              <li
-                className="hover:text-purple-500 cursor-pointer"
-                onClick={(e) => {
-                  UserLogout();
-                  navigate("/");
-                }}
-              >
-                Logout
-              </li>
-            )}
+
             {userState?.name && (
               <button
                 className="text-md p-2 bg-white text-purple-500 rounded-md hover:bg-purple-300 transition"

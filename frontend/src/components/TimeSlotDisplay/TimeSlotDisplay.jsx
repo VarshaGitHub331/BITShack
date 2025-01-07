@@ -89,10 +89,18 @@ const TimeSlotDisplay = ({ timeSlots }) => {
       <table className="w-full table-auto border-collapse border border-gray-300">
         <thead>
           <tr className="bg-purple-100">
-            <th className="border border-gray-300 p-2 text-sm">Start Time</th>
-            <th className="border border-gray-300 p-2 text-sm">End Time</th>
-            <th className="border border-gray-300 p-2 text-sm">Date</th>
-            <th className="border border-gray-300 p-2 text-sm">Availability</th>
+            <th className="border border-gray-300 p-2 text-sm text-purple-500">
+              Start Time
+            </th>
+            <th className="border border-gray-300 p-2 text-sm text-purple-500">
+              End Time
+            </th>
+            <th className="border border-gray-300 p-2 text-sm text-purple-500">
+              Date
+            </th>
+            <th className="border border-gray-300 p-2 text-sm text-purple-500">
+              Availability
+            </th>
           </tr>
         </thead>
         <tbody>
