@@ -28,9 +28,14 @@ module.exports = (sequelize, DataTypes) => {
           "Cancelled",
           "Rescheduled",
           "Confirmed",
-          "Pending"
+          "Pending",
+          "Completed"
         ),
         allowNull: false,
+      },
+      reason: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     {

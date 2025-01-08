@@ -7,6 +7,7 @@ const {
   Appointment,
   User,
   Provider_Resource,
+  Patient,
   Patient_Resource,
   Appointment_Encounter,
 } = require("../utils/InitializeModels");
@@ -249,7 +250,7 @@ const deleteTimeSlots = async (req, res, next) => {
   }
 };
 const bookAppointment = async (req, res, next) => {
-  const { slot_id, user_id } = req.body;
+  const { slot_id, user_id, reason } = req.body;
 
   try {
     // Start a transaction to ensure atomicity
@@ -300,7 +301,8 @@ const bookAppointment = async (req, res, next) => {
       {
         slot_id,
         patient_id: user_id,
-        status: "Pending", // Status is "Pending" while waiting for confirmation
+        status: "Pending",
+        reason, // Status is "Pending" while waiting for confirmation
         appointment_deadline: timeSlot.locked_until, // Deadline when the lock expires
       },
       { transaction }
@@ -323,7 +325,6 @@ const bookAppointment = async (req, res, next) => {
       .json({ error: "Something went wrong while booking the appointment." });
   }
 };
-const removeAppointment = async (req, res, next) => {};
 
 const confirmAppointment = async (req, res, next) => {
   const { user_id, appointment_id, reason = "Consultation" } = req.body;
@@ -457,6 +458,50 @@ const fetchTimeSlots = async (req, res, next) => {
   });
   return res.status(200).json(time_slots);
 };
+const fetchProviders = async (req, res, next) => {
+  try {
+    const providers = await Hospital_Provider.findAll({
+      include: [{ model: Hospital }],
+    });
+    console.log(providers);
+    return res.status(200).json(providers);
+  } catch (e) {
+    console.log(e);
+  }
+};
+const fetchProviderAppointments = async (req, res, next) => {
+  const results = [];
+  try {
+    const { provider_id } = req.query;
+    const timeSlots = await Time_Slots.findAll({
+      attributes: ["slot_id"],
+      where: {
+        provider: provider_id,
+      },
+    });
+    console.log("Fetched timelsots are", timeSlots);
+    for (timeSlot of timeSlots) {
+      const time_slot_id = timeSlot.slot_id;
+      console.log(time_slot_id);
+      const appointments = await Appointment.findAll({
+        include: [
+          {
+            model: Patient,
+          },
+        ],
+        where: {
+          slot_id: time_slot_id,
+        },
+        raw: true,
+      });
+      console.log(appointments);
+      results.push(appointments);
+    }
+    return res.status(200).json(results);
+  } catch (e) {
+    console.log(e);
+  }
+};
 module.exports = {
   registerHospitalProvider,
   createTimeSlots,
@@ -464,5 +509,7 @@ module.exports = {
   confirmAppointment,
   updateTimeSlots,
   fetchTimeSlots,
+  fetchProviders,
   deleteTimeSlots,
+  fetchProviderAppointments,
 };

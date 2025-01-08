@@ -8,6 +8,7 @@ const patientRouter = require("./routes/PatientRouter");
 const hospitalRouter = require("./routes/HospitalRouter");
 const HospitalUserRouter = require("./routes/HospitalUserRouter"); // Import the UsersRouter
 const HospitalProviderRouter = require("./routes/HospitalProvidersRouter");
+const AppointmentRouter = require("./routes/Appointments.js");
 const fhirRouter = require("./routes/FHIR");
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,7 @@ app.use("/patient", patientRouter);
 app.use("/hospital", hospitalRouter);
 app.use("/hospitalUser", HospitalUserRouter); // Mount the router here*/
 app.use("/hospitalProvider", HospitalProviderRouter);
+app.use("/appointment", AppointmentRouter);
 app.use("/fhir", fhirRouter);
 // Start the server
 server.listen(3001, () => {

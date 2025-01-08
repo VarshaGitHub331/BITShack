@@ -1,4 +1,11 @@
-const { Patient, Patient_Resource } = require("../utils/InitializeModels");
+const {
+  Patient,
+  Patient_Resource,
+  Appointment,
+  Time_Slots,
+  Hospital,
+  Hospital_Provider,
+} = require("../utils/InitializeModels");
 const axios = require("axios");
 const registerPatient = async (req, res, next) => {
   console.log(req.body);
@@ -97,4 +104,41 @@ const addLocation = async (req, res, next) => {
     next(e);
   }
 };
-module.exports = { registerPatient, addLocation };
+const fetchAppointments = async (req, res, next) => {
+  try {
+    const results = [];
+    const { user_id } = req.query;
+    const appointments = await Appointment.findAll({
+      where: {
+        patient_id: user_id,
+      },
+      raw: true,
+    });
+    for (let appointment of appointments) {
+      const slot_id = appointment.slot_id;
+      const Provider = await Time_Slots.findOne({
+        attributes: ["provider"],
+        where: {
+          slot_id,
+        },
+        raw: true,
+      });
+
+      const provider = await Hospital_Provider.findOne({
+        where: { provider_id: Provider.provider },
+        include: [
+          {
+            model: Hospital,
+          },
+        ],
+        raw: true,
+      });
+      appointment.provider = provider;
+      results.push(appointment);
+    }
+    res.status(200).json(results);
+  } catch (e) {
+    next(e);
+  }
+};
+module.exports = { registerPatient, addLocation, fetchAppointments };
