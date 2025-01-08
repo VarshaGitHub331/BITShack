@@ -120,7 +120,7 @@ const TimeSlotDisplay = ({ timeSlots }) => {
                 {new Date(slot.slot_date).toISOString().split("T")[0]}
               </td>
               <td className="border border-gray-300 p-2 text-center">
-                {slot.isAvailable ? (
+                {slot.isAvailable == "True" ? (
                   <span className="text-green-600 font-semibold">
                     Available
                   </span>

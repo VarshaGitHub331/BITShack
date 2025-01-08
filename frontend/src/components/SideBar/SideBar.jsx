@@ -101,6 +101,7 @@ function SideBar({ setOpenSidebar }) {
           <Link
             onClick={(e) => {
               UserLogout();
+              setOpenSidebar(false);
             }}
             className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
           >

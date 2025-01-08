@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import moment from "moment";
 import { useAuthContext } from "../../contexts/AuthContext";
 import axios from "axios";
-
+import { QueryClient } from "@tanstack/react-query";
 export default function TimeSlotBooking({ timeSlots }) {
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -11,7 +11,7 @@ export default function TimeSlotBooking({ timeSlots }) {
   const { user_id } = userState;
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false); // State for popup visibility
-
+  const queryClient = new QueryClient();
   const groupedSlots = timeSlots?.reduce((acc, slot) => {
     const date = moment(slot.slot_date).format("YYYY-MM-DD");
     if (!acc[date]) acc[date] = [];
@@ -47,6 +47,7 @@ export default function TimeSlotBooking({ timeSlots }) {
       setBookedAppointment(response.data.appointment);
       setLoading(false);
       setShowPopup(true); // Show the popup
+      queryClient.invalidateQueries(["timeslots"]);
     } catch (e) {
       console.log(e);
       alert(e);
@@ -109,27 +110,30 @@ export default function TimeSlotBooking({ timeSlots }) {
 
           <div className="grid grid-cols-3 gap-3 md:grid-cols-3 sm:flex sm:flex-wrap sm:gap-x-1 sm:gap-y-2">
             {selectedDay && groupedSlots[selectedDay] ? (
-              groupedSlots[selectedDay].map((slot) => (
-                <button
-                  key={slot.slot_id}
-                  onClick={() =>
-                    handleTimeSelect({
-                      slot_id: slot.slot_id,
-                      start_time: slot.start_time,
-                      end_time: slot.end_time,
-                    })
-                  }
-                  className={`w-40 px-2 py-2 rounded-full border text-center text-sm font-medium
+              groupedSlots[selectedDay].map(
+                (slot) =>
+                  slot.isAvailable === "True" && (
+                    <button
+                      key={slot.slot_id}
+                      onClick={() =>
+                        handleTimeSelect({
+                          slot_id: slot.slot_id,
+                          start_time: slot.start_time,
+                          end_time: slot.end_time,
+                        })
+                      }
+                      className={`w-40 px-2 py-2 rounded-full border text-center text-sm font-medium
                   ${
                     selectedTime?.slot_id === slot.slot_id
                       ? "bg-purple-500 text-white"
                       : "bg-white border-gray-300"
                   }`}
-                  disabled={slot.isAvailable !== "True"}
-                >
-                  {moment(slot.start_time, "HH:mm:ss").format("hh:mm A")}
-                </button>
-              ))
+                      disabled={slot.isAvailable !== "True"}
+                    >
+                      {moment(slot.start_time, "HH:mm:ss").format("hh:mm A")}
+                    </button>
+                  )
+              )
             ) : (
               <div className="col-span-3 text-center text-gray-500">
                 Please select a day to view slots.

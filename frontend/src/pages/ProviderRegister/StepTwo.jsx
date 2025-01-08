@@ -46,7 +46,7 @@ export default function StepOne({
           <select
             value={formData.hospital_regno}
             onChange={(e) => {
-              const selectedIndex = e.target.selectedIndex - 1; // Adjust index to account for the "Loading..." option
+              const selectedIndex = e.target.selectedIndex; // Adjust index to account for the "Loading..." option
               if (selectedIndex >= 0) {
                 // Ensure it's not the "Loading..." option
                 const selectedHospital = hospitals[selectedIndex];

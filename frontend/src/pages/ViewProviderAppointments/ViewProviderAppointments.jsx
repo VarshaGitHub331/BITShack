@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchProviderAppointments } from "../../apis/appointment";
 import { useAuthContext } from "../../contexts/AuthContext";
-
 import axios from "axios";
 
 export default function ViewAppointments() {
@@ -12,13 +11,13 @@ export default function ViewAppointments() {
     data: providerAppointments,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryFn: () => fetchProviderAppointments({ provider_id: user_id }),
     queryKey: ["provider_appointments", user_id],
   });
 
   const handleCancel = async (appointmentId) => {
-    console.log("Canceling appointment:", appointmentId);
     try {
       await axios.post(
         `${process.env.REACT_APP_SERVER_URL}/appointment/updateStatus`,
@@ -32,15 +31,20 @@ export default function ViewAppointments() {
           },
         }
       );
-      alert("Cancelled");
+      refetch(); // Refresh the appointments list
     } catch (e) {
-      console.log(e);
+      console.error("Error cancelling appointment:", e);
+      alert("Failed to cancel appointment. Please try again.");
     }
-    // Add cancellation API call or logic here
   };
 
   if (isLoading) {
-    return <div className="text-blue-500">Loading appointments...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500"></div>
+        <span className="ml-2 text-blue-500">Loading appointments...</span>
+      </div>
+    );
   }
 
   if (isError) {
@@ -58,19 +62,38 @@ export default function ViewAppointments() {
         {providerAppointments?.map((appointment) => (
           <div
             key={appointment.id}
-            className="relative flex items-center border-x-slate-300 space-x-2 bg-white py-2 rounded-lg"
+            className="relative flex flex-col border border-slate-300 bg-white py-4 px-4 rounded-lg mb-4"
           >
+            {/* Patient Name */}
+            <div className="text-sm md:text-base font-medium text-gray-700">
+              {appointment["Patient.first_name"]}
+            </div>
+
+            {/* Date, Time, and Cancel Button */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-2 space-y-2 md:space-y-0">
+              <div className="text-sm md:text-base text-gray-600 font-bold ">
+                {
+                  new Date(appointment["Time_Slot.slot_date"])
+                    .toISOString()
+                    .split("T")[0]
+                }
+                | {appointment["Time_Slot.start_time"]}
+              </div>
+
+              {appointment.status !== "Cancelled" && (
+                <button
+                  className="py-1 px-3 bg-purple-500 text-white rounded-md text-sm md:text-base hover:bg-purple-600"
+                  onClick={() => handleCancel(appointment.appointment_id)}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+
+            {/* Appointment Status */}
             <div className="absolute top-2 right-2 bg-blue-100 text-blue-500 text-xs md:text-sm px-3 py-1 rounded-md font-semibold">
               {appointment.status}
             </div>
-            {appointment.status !== "Cancelled" && (
-              <div
-                className="absolute bottom-2 text-center right-2 w-1/4 py-1 md:py-2 bg-purple-500 px-3 rounded-md text-white cursor-pointer"
-                onClick={() => handleCancel(appointment.appointment_id)}
-              >
-                Cancel
-              </div>
-            )}
           </div>
         ))}
       </div>
