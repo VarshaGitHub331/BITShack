@@ -10,6 +10,8 @@ import CreateTimeSlot from "./pages/CreateTimeSlots/CreateTimeSlots";
 import DisplayTimeSlots from "./pages/DisplayTimeSlots/DisplayTimeSlots";
 import ViewProviders from "./pages/ViewProviders/ViewProviders";
 import BookAppointment from "./pages/BookAppointment/BookAppointment";
+import ViewAppointments from "./pages/ViewAppointments/ViewAppointment";
+import ViewProviderAppointments from "./pages/ViewProviderAppointments/ViewProviderAppointments.jsx";
 function App() {
   const Layout = () => {
     return (
@@ -71,8 +73,12 @@ function App() {
           element: <BookAppointment />,
         },
         {
-          path: "/hospitalUserRegister",
-          element: <h3>Hospital User</h3>,
+          path: "/viewAppointments",
+          element: <ViewAppointments />,
+        },
+        {
+          path: "/viewProviderAppointments",
+          element: <ViewProviderAppointments />,
         },
       ],
     },

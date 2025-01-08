@@ -55,6 +55,15 @@ function SideBar({ setOpenSidebar }) {
                 View Timeslots
               </Link>
             </li>
+            <li>
+              <Link
+                to="/viewProviderAppointments"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faCalendarDay} className="h-4 w-4" />
+                View Appointments
+              </Link>
+            </li>
           </>
         )}
         {role === "Patient" && (
@@ -75,6 +84,15 @@ function SideBar({ setOpenSidebar }) {
               >
                 <FontAwesomeIcon icon={faCalendarPlus} className="h-4 w-4" />
                 Book Appointment
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/viewAppointments"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faCalendarDay} className="h-4 w-4" />
+                View Appointments
               </Link>
             </li>
           </>
