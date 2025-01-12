@@ -12,6 +12,7 @@ import ViewProviders from "./pages/ViewProviders/ViewProviders";
 import BookAppointment from "./pages/BookAppointment/BookAppointment";
 import ViewAppointments from "./pages/ViewAppointments/ViewAppointment";
 import ViewProviderAppointments from "./pages/ViewProviderAppointments/ViewProviderAppointments.jsx";
+import Dashboard from "./pages/LocationDashboard/LocationDashboard.jsx";
 function App() {
   const Layout = () => {
     return (
@@ -79,6 +80,10 @@ function App() {
         {
           path: "/viewProviderAppointments",
           element: <ViewProviderAppointments />,
+        },
+        {
+          path: "/locationHelp",
+          element: <Dashboard />,
         },
       ],
     },
