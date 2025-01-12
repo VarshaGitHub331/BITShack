@@ -474,7 +474,6 @@ const fetchProviderAppointments = async (req, res, next) => {
   try {
     const { provider_id } = req.query;
     const timeSlots = await Time_Slots.findAll({
-      attributes: ["slot_id"],
       where: {
         provider: provider_id,
       },
@@ -488,6 +487,9 @@ const fetchProviderAppointments = async (req, res, next) => {
           {
             model: Patient,
           },
+          {
+            model: Time_Slots,
+          },
         ],
         where: {
           slot_id: time_slot_id,
@@ -495,8 +497,9 @@ const fetchProviderAppointments = async (req, res, next) => {
         raw: true,
       });
       console.log(appointments);
-      results.push(appointments);
+      if (appointments != []) results.push(...appointments);
     }
+    console.log(results);
     return res.status(200).json(results);
   } catch (e) {
     console.log(e);
