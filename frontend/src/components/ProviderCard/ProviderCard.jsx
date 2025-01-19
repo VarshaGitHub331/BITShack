@@ -1,6 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from "react-router-dom";
 const ProviderCard = ({ provider }) => {
   const navigate = useNavigate();
   const { provider_name, specialization, gender, Hospital, details } = provider;
@@ -28,14 +30,27 @@ const ProviderCard = ({ provider }) => {
           {Hospital.hospital_name || "N/A"}
         </p>
       </div>
-      <button
-        className="mt-4 w-full bg-purple-500 hover:bg-purple-300 text-white font-medium py-1 px-4 rounded-lg"
-        onClick={(e) => {
-          navigate("/book-appointment", { state: { provider } });
-        }}
-      >
-        Book Appointment
-      </button>
+      <div className="flex">
+        <button
+          className="mt-4 w-full bg-purple-500 hover:bg-purple-300 text-white font-medium py-1 px-4 rounded-lg"
+          onClick={(e) => {
+            navigate("/book-appointment", { state: { provider } });
+          }}
+        >
+          Book
+        </button>
+        <Link
+          className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+          onClick={(e) => {
+            navigate(
+              `/hospitalLocation?lat=${Hospital.latitude}&lng=${Hospital.longitude}`
+            );
+          }}
+        >
+          <FontAwesomeIcon icon={faLocationDot} className="h-4 w-4" />
+          Location
+        </Link>
+      </div>
     </div>
   );
 };

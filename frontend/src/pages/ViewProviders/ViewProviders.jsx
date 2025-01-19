@@ -6,7 +6,6 @@ import ReactPaginate from "react-paginate";
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
-
 const ITEMS_PER_PAGE = 6; // Number of items per page
 
 const ViewProviders = () => {
@@ -21,7 +20,7 @@ const ViewProviders = () => {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [category, setCategory] = useState("");
-
+  const [loading, setLoading] = useState(true);
   // Paginated data
   const offset = currentPage * ITEMS_PER_PAGE;
   const currentPageProviders = providers?.slice(
@@ -38,6 +37,7 @@ const ViewProviders = () => {
       provider.specialization.toLowerCase().includes(category.toLowerCase())
     );
   }, [providers, category]);
+
   if (isLoading) return <div>Loading providers...</div>;
   if (error) return <div>Error fetching providers.</div>;
   return (

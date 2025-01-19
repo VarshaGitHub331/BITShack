@@ -8,6 +8,7 @@ import {
 import { useAuthContext } from "../../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
 
 function SideBar({ setOpenSidebar }) {
   const { userState, UserLogin, UserLogout } = useAuthContext();
@@ -93,6 +94,15 @@ function SideBar({ setOpenSidebar }) {
               >
                 <FontAwesomeIcon icon={faCalendarDay} className="h-4 w-4" />
                 View Appointments
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/locationHelp"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faLocationDot} className="h-4 w-4" />
+                Location
               </Link>
             </li>
           </>
