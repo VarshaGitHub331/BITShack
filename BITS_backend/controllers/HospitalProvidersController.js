@@ -461,14 +461,28 @@ const fetchTimeSlots = async (req, res, next) => {
 const fetchProviders = async (req, res, next) => {
   try {
     const providers = await Hospital_Provider.findAll({
-      include: [{ model: Hospital }],
+      include: [
+        {
+          model: Hospital,
+          attributes: {
+            include: [
+              [Sequelize.fn("ST_X", Sequelize.col("location")), "longitude"], // Extract longitude
+              [Sequelize.fn("ST_Y", Sequelize.col("location")), "latitude"], // Extract latitude
+            ],
+          },
+        },
+      ],
     });
     console.log(providers);
     return res.status(200).json(providers);
   } catch (e) {
-    console.log(e);
+    console.error("Error fetching providers:", e);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while fetching providers." });
   }
 };
+
 const fetchProviderAppointments = async (req, res, next) => {
   const results = [];
   try {
