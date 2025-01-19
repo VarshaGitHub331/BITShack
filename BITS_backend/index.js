@@ -9,6 +9,7 @@ const hospitalRouter = require("./routes/HospitalRouter");
 const HospitalUserRouter = require("./routes/HospitalUserRouter"); // Import the UsersRouter
 const HospitalProviderRouter = require("./routes/HospitalProvidersRouter");
 const AppointmentRouter = require("./routes/Appointments.js");
+const NVIDIARouter = require("./routes/NVIDIA.js");
 const fhirRouter = require("./routes/FHIR");
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,7 @@ app.use("/hospitalUser", HospitalUserRouter); // Mount the router here*/
 app.use("/hospitalProvider", HospitalProviderRouter);
 app.use("/appointment", AppointmentRouter);
 app.use("/fhir", fhirRouter);
+app.use("/nvidia", NVIDIARouter);
 // Start the server
 server.listen(3001, () => {
   console.log("Server is running on http://localhost:3001");
