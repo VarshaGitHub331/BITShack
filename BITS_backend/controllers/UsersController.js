@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
+const {
+  Hospital_User,
+  Hospital,
+  Hospital_Provider,
+} = require("../utils/InitializeModels");
 
 const SECRET_KEY = "bitsnpieces"; // Replace with a secure key
 
@@ -36,8 +41,9 @@ const registerUser = async (req, res) => {
 
 // Login user and generate JWT
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
+  console.log("LOGGN IN");
+  const { email, password, role } = req.body;
+  let name = "";
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
   }
@@ -48,7 +54,22 @@ const loginUser = async (req, res) => {
     if (!user || !(await user.validatePassword(password))) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
-
+    if (role == "Admin") {
+      const hospitalUser = await Hospital_User.findOne({
+        include: { model: Hospital, attributes: ["hospital_name"] },
+        where: { user_id: user.user_id },
+        raw: true,
+      });
+      console.log(hospitalUser);
+      name = hospitalUser["Hospital.hospital_name"];
+    }
+    if (role == "Provider") {
+      const hospitalProvider = await Hospital_Provider.findOne({
+        where: { provider_id: user.user_id },
+        raw: true,
+      });
+      name = hospitalProvider.provider_name;
+    }
     // Generate JWT
     const token = jwt.sign(
       { userId: user.user_id, role: user.role },
@@ -58,7 +79,9 @@ const loginUser = async (req, res) => {
       }
     );
 
-    res.json({ token });
+    res.status(200).json({
+      resultUser: { user_id: user.user_id, name, role: user.role, token },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error logging in" });
