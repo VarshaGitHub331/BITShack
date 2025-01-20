@@ -10,6 +10,7 @@ export default function NavBar() {
   const { userState, UserLogin, UserLogout } = useAuthContext();
   const [openSidebar, setOpenSidebar] = useState(false);
   const [showLinks, setShowLinks] = useState(false);
+  const [showLoginLinks, setShowLoginLinks] = useState(false);
   console.log(userState);
   const navigate = useNavigate();
 
@@ -53,6 +54,31 @@ export default function NavBar() {
                     </li>
                     <li className="hover:text-purple-500 cursor-pointer">
                       <Link to="/hospitalRegister">Hospital Admin</Link>
+                    </li>
+                  </ul>
+                )}
+              </div>
+            )}
+            {!userState.user_id && (
+              <div className="relative">
+                <li
+                  className="hover:text-purple-500 cursor-pointer"
+                  onClick={(e) => {
+                    setShowLoginLinks(!showLinks);
+                  }}
+                >
+                  Login
+                </li>
+                {showLoginLinks && (
+                  <ul className="absolute  mt-2  bg-white shadow-md rounded-md p-2 border border-gray-200 text-sm">
+                    <li className="hover:text-purple-500 cursor-pointer">
+                      <Link to="/login?role=Patient">User</Link>
+                    </li>
+                    <li className="hover:text-purple-500 cursor-pointer">
+                      <Link to="/login?role=Provider">Provider</Link>
+                    </li>
+                    <li className="hover:text-purple-500 cursor-pointer">
+                      <Link to="/login?role=Admin">Hospital Admin</Link>
                     </li>
                   </ul>
                 )}

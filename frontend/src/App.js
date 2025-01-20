@@ -14,6 +14,7 @@ import ViewAppointments from "./pages/ViewAppointments/ViewAppointment";
 import ViewProviderAppointments from "./pages/ViewProviderAppointments/ViewProviderAppointments.jsx";
 import Dashboard from "./pages/LocationDashboard/LocationDashboard.jsx";
 import HospitalMap from "./pages/LocationDashboard/LocateHospital.jsx";
+import Login from "./pages/Login/Login.jsx";
 function App() {
   const Layout = () => {
     return (
@@ -89,6 +90,10 @@ function App() {
         {
           path: "/hospitalLocation",
           element: <HospitalMap />,
+        },
+        {
+          path: "/login",
+          element: <Login />,
         },
       ],
     },
