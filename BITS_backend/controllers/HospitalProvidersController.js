@@ -527,32 +527,48 @@ const fetchPatientDocuments = async (req, res, next) => {
         .status(403)
         .send("You are not authorized to view these documents.");
     }
+
     const { patient_id } = req.query;
     const patientResource = await Patient_Resource.findOne({
       where: { patient_id },
     });
-    const patient_fhir_resource_id = patientResource.patient_fhir_resource_id;
-    const fhirUrl = `https://fhir.simplifier.net/BITS-HACK/DocumentReference?subject=Patient/${patient_fhir_resource_id}`;
 
-    // Send the GET request to fetch the documents
+    if (!patientResource) {
+      return res.status(404).send("Patient resource not found.");
+    }
+
+    const patient_fhir_resource_id = patientResource.patient_fhir_resource_id;
+    console.log("Fetching for", patient_fhir_resource_id);
+
+    const fhirUrl = `https://fhir.simplifier.net/BITS-HACK/DocumentReference?subject=Patient/${patient_fhir_resource_id}`;
     const response = await axios.get(fhirUrl, {
       headers: {
-        Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`, // Replace with your access token
+        Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
         "Content-Type": "application/json",
       },
     });
 
-    // Check if there are documents in the response
     if (response.data && response.data.entry) {
-      const documents = response.data.entry.map((entry) => entry.resource);
+      const documents = response.data.entry
+        .map((entry) => entry.resource)
+        .filter((doc) => {
+          console.log("hi doc", doc.subject);
+          const reference = doc?.subject?.reference;
+          // Extract the Patient ID from the reference URL
+          const extractedId = reference?.split("/").pop(); // Get the last segment after "/"
+          return extractedId == patient_fhir_resource_id;
+        });
+
       return res.status(200).json(documents);
     } else {
-      return []; // No documents found
+      return res.status(200).json([]); // No documents found
     }
   } catch (e) {
+    console.error("Error fetching documents:", e.message);
     next(e);
   }
 };
+
 module.exports = {
   registerHospitalProvider,
   createTimeSlots,

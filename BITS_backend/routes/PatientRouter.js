@@ -78,8 +78,8 @@ patientRouter.post(
         return res.status(404).json({ error: "Patient resource not found" });
       }
 
-      const patient_resource_fhir_id = patientResource.patient_resource_fhir_id;
-
+      const patient_resource_fhir_id = patientResource.patient_fhir_resource_id;
+      console.log(patient_resource_fhir_id);
       // Construct FHIR DocumentReference
       const documentCode = documentTypeMapping[record_type];
       const documentData = {

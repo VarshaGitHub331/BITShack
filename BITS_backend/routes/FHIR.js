@@ -3,6 +3,10 @@ const {
   Patient_Resource,
   Appointment_Encounter,
 } = require("../utils/InitializeModels");
+const {
+  extractStructuredData,
+  extractObservationDetails,
+} = require("../controllers/AI_Controllers");
 const router = express.Router();
 const axios = require("axios");
 
@@ -42,101 +46,398 @@ router.post("/getPatientResource", async function (req, res, next) {
   }
 });
 
-router.post("/storeObservation", async function (req, res, next) {
-  console.log(req.body);
-  const { patient_id, observations, appointment_id } = req.body;
+router.post(
+  "/storeObservation",
+  extractObservationDetails,
+  async function (req, res, next) {
+    console.log(req.body);
+    const { patient_id, observations, appointment_id } = req.body;
 
-  const patient_fhir_resource_id = await Patient_Resource.findOne({
-    where: { patient_id },
-    raw: true,
-  });
-  const appointment_encounter = await Appointment_Encounter.findOne({
-    where: { appointment_id: appointment_id },
-    raw: true,
-  });
+    const patient_fhir_resource_id = await Patient_Resource.findOne({
+      where: { patient_id },
+      raw: true,
+    });
+    const appointment_encounter = await Appointment_Encounter.findOne({
+      where: { appointment_id: appointment_id },
+      raw: true,
+    });
 
-  if (!patient_fhir_resource_id) {
-    return res.status(404).send({ message: "Patient not found" });
+    if (!patient_fhir_resource_id) {
+      return res.status(404).send({ message: "Patient not found" });
+    }
+
+    const fhir_patient_id = patient_fhir_resource_id.patient_fhir_resource_id;
+
+    try {
+      const response = [];
+
+      // Use a for loop to send each observation sequentially
+      for (let obs of observations) {
+        const observationData = {
+          resourceType: "Observation",
+          status: "final",
+          category: [
+            {
+              coding: [
+                {
+                  system:
+                    "http://terminology.hl7.org/CodeSystem/observation-category",
+                  code: "vital-signs",
+                  display: "Vital Signs",
+                },
+              ],
+            },
+          ],
+          code: {
+            coding: [
+              {
+                system: "http://loinc.org",
+                code: obs.observationCode,
+                display: obs.code,
+              },
+            ],
+            text: obs.code,
+          },
+          subject: {
+            reference: `Patient/${fhir_patient_id}`,
+          },
+          encounter: {
+            reference: `Encounter/${appointment_encounter.encounter_id}`, // Link the encounter here
+          },
+          effectiveDateTime: new Date().toISOString(),
+          valueQuantity: {
+            value: parseFloat(obs.value),
+            unit: obs.unit || "mmHg",
+            system: "http://unitsofmeasure.org",
+            code: obs.unitCode || "mm[Hg]",
+          },
+        };
+
+        console.log(
+          "Sending Observation Data:",
+          JSON.stringify(observationData, null, 2)
+        );
+
+        try {
+          const fhirResponse = await axios.post(
+            `https://fhir.simplifier.net/BITS-HACK/Observation`,
+            observationData,
+            {
+              headers: {
+                Accept: "application/fhir+json",
+                Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+              },
+            }
+          );
+
+          console.log("FHIR Response:", fhirResponse.data);
+          response.push(fhirResponse.data);
+        } catch (error) {
+          console.error("Error saving observation:", obs);
+          console.error(error.message);
+        }
+      }
+
+      res.json({ message: "Observations saved successfully", data: response });
+    } catch (error) {
+      console.error("Error saving observations:", error);
+      res
+        .status(500)
+        .send({ message: "Error saving observations", error: error.message });
+    }
   }
+);
+router.post(
+  "/storeDiagnosis",
+  extractStructuredData,
+  async function (req, res, next) {
+    console.log(req.body);
+    const { patient_id, diagnoses, appointment_id } = req.body;
 
-  const fhir_patient_id = patient_fhir_resource_id.patient_fhir_resource_id;
+    const patient_fhir_resource_id = await Patient_Resource.findOne({
+      where: { patient_id },
+      raw: true,
+    });
+    const appointment_encounter = await Appointment_Encounter.findOne({
+      where: { appointment_id: appointment_id },
+      raw: true,
+    });
 
-  try {
-    const response = [];
+    if (!patient_fhir_resource_id) {
+      return res.status(404).send({ message: "Patient not found" });
+    }
 
-    // Use a for loop to send each observation sequentially
-    for (let obs of observations) {
-      const observationData = {
-        resourceType: "Observation",
-        status: "final",
-        category: [
-          {
+    const fhir_patient_id = patient_fhir_resource_id.patient_fhir_resource_id;
+
+    try {
+      const response = [];
+
+      for (let diagnosis of diagnoses) {
+        const diagnosisData = {
+          resourceType: "Condition",
+          clinicalStatus: {
             coding: [
               {
                 system:
-                  "http://terminology.hl7.org/CodeSystem/observation-category",
-                code: "vital-signs",
-                display: "Vital Signs",
+                  "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                code: "active",
+                display: "Active",
               },
             ],
           },
-        ],
-        code: {
-          coding: [
-            {
-              system: "http://loinc.org",
-              code: obs.observationCode,
-              display: obs.code,
-            },
-          ],
-          text: obs.code,
-        },
-        subject: {
-          reference: `Patient/${fhir_patient_id}`,
-        },
-        encounter: {
-          reference: `Encounter/${appointment_encounter.encounter_id}`, // Link the encounter here
-        },
-        effectiveDateTime: new Date().toISOString(),
-        valueQuantity: {
-          value: parseFloat(obs.value),
-          unit: obs.unit || "mmHg",
-          system: "http://unitsofmeasure.org",
-          code: obs.unitCode || "mm[Hg]",
-        },
-      };
+          code: {
+            coding: [
+              {
+                system: "http://www.nlm.nih.gov/research/umls/rxnorm",
+                code: diagnosis.diagnosisCode,
+                display: diagnosis.code,
+              },
+            ],
+            text: diagnosis.code,
+          },
+          subject: {
+            reference: `Patient/${fhir_patient_id}`,
+          },
+          encounter: {
+            reference: `Encounter/${appointment_encounter.encounter_id}`,
+          },
+          onsetDateTime: new Date().toISOString(),
+        };
 
-      console.log(
-        "Sending Observation Data:",
-        JSON.stringify(observationData, null, 2)
-      );
-
-      try {
-        const fhirResponse = await axios.post(
-          `https://fhir.simplifier.net/BITS-HACK/Observation`,
-          observationData,
-          {
-            headers: {
-              Accept: "application/fhir+json",
-              Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
-            },
-          }
+        console.log(
+          "Sending Diagnosis Data:",
+          JSON.stringify(diagnosisData, null, 2)
         );
 
-        console.log("FHIR Response:", fhirResponse.data);
-        response.push(fhirResponse.data);
-      } catch (error) {
-        console.error("Error saving observation:", obs);
-        console.error(error.message);
+        try {
+          const fhirResponse = await axios.post(
+            `https://fhir.simplifier.net/BITS-HACK/Condition`,
+            diagnosisData,
+            {
+              headers: {
+                Accept: "application/fhir+json",
+                Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+              },
+            }
+          );
+
+          console.log("FHIR Response:", fhirResponse.data);
+          response.push(fhirResponse.data);
+        } catch (error) {
+          console.error("Error saving diagnosis:", diagnosis);
+          console.error(error.message);
+        }
       }
+
+      res.json({ message: "Diagnoses saved successfully", data: response });
+    } catch (error) {
+      console.error("Error saving diagnoses:", error);
+      res
+        .status(500)
+        .send({ message: "Error saving diagnoses", error: error.message });
+    }
+  }
+);
+router.post(
+  "/storePrescription",
+  extractStructuredData,
+  async function (req, res, next) {
+    console.log(req.body);
+    const { patient_id, prescriptions, appointment_id } = req.body;
+
+    const patient_fhir_resource_id = await Patient_Resource.findOne({
+      where: { patient_id },
+      raw: true,
+    });
+    const appointment_encounter = await Appointment_Encounter.findOne({
+      where: { appointment_id: appointment_id },
+      raw: true,
+    });
+
+    if (!patient_fhir_resource_id) {
+      return res.status(404).send({ message: "Patient not found" });
     }
 
-    res.json({ message: "Observations saved successfully", data: response });
+    const fhir_patient_id = patient_fhir_resource_id.patient_fhir_resource_id;
+
+    try {
+      const response = [];
+
+      for (let prescription of prescriptions) {
+        const prescriptionData = {
+          resourceType: "MedicationRequest",
+          status: "active",
+          intent: "order",
+          medicationCodeableConcept: {
+            coding: [
+              {
+                system: "http://www.nlm.nih.gov/research/umls/rxnorm",
+                code: prescription.medicationCode,
+                display: prescription.medicationName,
+              },
+            ],
+          },
+          subject: {
+            reference: `Patient/${fhir_patient_id}`,
+          },
+          encounter: {
+            reference: `Encounter/${appointment_encounter.encounter_id}`,
+          },
+          authoredOn: new Date().toISOString(),
+          dosageInstruction: [
+            {
+              text: prescription.dosage,
+            },
+          ],
+        };
+
+        console.log(
+          "Sending Prescription Data:",
+          JSON.stringify(prescriptionData, null, 2)
+        );
+
+        try {
+          const fhirResponse = await axios.post(
+            `https://fhir.simplifier.net/BITS-HACK/MedicationRequest`,
+            prescriptionData,
+            {
+              headers: {
+                Accept: "application/fhir+json",
+                Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+              },
+            }
+          );
+
+          console.log("FHIR Response:", fhirResponse.data);
+          response.push(fhirResponse.data);
+        } catch (error) {
+          console.error("Error saving prescription:", prescription);
+          console.error(error.message);
+        }
+      }
+
+      res.json({ message: "Prescriptions saved successfully", data: response });
+    } catch (error) {
+      console.error("Error saving prescriptions:", error);
+      res
+        .status(500)
+        .send({ message: "Error saving prescriptions", error: error.message });
+    }
+  }
+);
+router.post("/getObservationsForAppointment", async function (req, res, next) {
+  const { appointment_id } = req.body;
+
+  try {
+    // Find the appointment encounter details
+    const appointment_encounter = await Appointment_Encounter.findOne({
+      where: { appointment_id },
+      raw: true,
+    });
+
+    if (!appointment_encounter) {
+      return res.status(404).json({ error: "Appointment encounter not found" });
+    }
+
+    const encounter_id = appointment_encounter.encounter_id;
+
+    // Fetch the observations related to this encounter
+    const fhirResponse = await axios.get(
+      `https://fhir.simplifier.net/BITS-HACK/Observation`,
+      {
+        params: {
+          encounter: encounter_id, // Pass the encounter ID to filter observations
+        },
+        headers: {
+          Accept: "application/fhir+json",
+          Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+        },
+      }
+    );
+
+    console.log(fhirResponse.data); // Logs the observations fetched
+    res.status(200).json(fhirResponse.data); // Return the observations
   } catch (error) {
-    console.error("Error saving observations:", error);
-    res
-      .status(500)
-      .send({ message: "Error saving observations", error: error.message });
+    console.error("Error fetching observations:", error.message);
+    res.status(500).json({ error: "Error fetching observations" });
+  }
+});
+
+// Retrieve Diagnoses for a given appointment
+router.post("/getDiagnosesForAppointment", async function (req, res, next) {
+  const { appointment_id } = req.body;
+
+  try {
+    // Find the appointment encounter details
+    const appointment_encounter = await Appointment_Encounter.findOne({
+      where: { appointment_id },
+      raw: true,
+    });
+
+    if (!appointment_encounter) {
+      return res.status(404).json({ error: "Appointment encounter not found" });
+    }
+
+    const encounter_id = appointment_encounter.encounter_id;
+
+    // Fetch the conditions (diagnoses) related to this encounter
+    const fhirResponse = await axios.get(
+      `https://fhir.simplifier.net/BITS-HACK/Condition`,
+      {
+        params: {
+          encounter: encounter_id, // Pass the encounter ID to filter diagnoses
+        },
+        headers: {
+          Accept: "application/fhir+json",
+          Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+        },
+      }
+    );
+
+    console.log(fhirResponse.data); // Logs the diagnoses fetched
+    res.status(200).json(fhirResponse.data); // Return the diagnoses
+  } catch (error) {
+    console.error("Error fetching diagnoses:", error.message);
+    res.status(500).json({ error: "Error fetching diagnoses" });
+  }
+});
+
+// Retrieve Prescriptions for a given appointment
+router.post("/getPrescriptionsForAppointment", async function (req, res, next) {
+  const { appointment_id } = req.body;
+
+  try {
+    // Find the appointment encounter details
+    const appointment_encounter = await Appointment_Encounter.findOne({
+      where: { appointment_id },
+      raw: true,
+    });
+
+    if (!appointment_encounter) {
+      return res.status(404).json({ error: "Appointment encounter not found" });
+    }
+
+    const encounter_id = appointment_encounter.encounter_id;
+
+    // Fetch the prescriptions (medication requests) related to this encounter
+    const fhirResponse = await axios.get(
+      `https://fhir.simplifier.net/BITS-HACK/MedicationRequest`,
+      {
+        params: {
+          encounter: encounter_id, // Pass the encounter ID to filter prescriptions
+        },
+        headers: {
+          Accept: "application/fhir+json",
+          Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`,
+        },
+      }
+    );
+
+    console.log(fhirResponse.data); // Logs the prescriptions fetched
+    res.status(200).json(fhirResponse.data); // Return the prescriptions
+  } catch (error) {
+    console.error("Error fetching prescriptions:", error.message);
+    res.status(500).json({ error: "Error fetching prescriptions" });
   }
 });
 
