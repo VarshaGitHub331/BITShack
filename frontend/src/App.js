@@ -17,6 +17,7 @@ import HospitalMap from "./pages/LocationDashboard/LocateHospital.jsx";
 import Login from "./pages/Login/Login.jsx";
 import HospitalAdmin from "./pages/Dashboard/HospitalAdminDashboard.jsx";
 import PatientDashboard from "./pages/Dashboard/HospitalPatientDashboard.jsx";
+import PatientDocuments from "./pages/PatientDocuments/PatientDocuments.jsx";
 function App() {
   const Layout = () => {
     return (
@@ -104,6 +105,10 @@ function App() {
         {
           path: "/patientDashboard",
           element: <PatientDashboard />,
+        },
+        {
+          path: "/patientDocuments",
+          element: <PatientDocuments />,
         },
       ],
     },

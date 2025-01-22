@@ -4,6 +4,8 @@ import { useAuthContext } from "../../contexts/AuthContext";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import { useState } from "react";
+import { FaFileAlt } from "react-icons/fa"; // Import icon library
+import { useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 5; // Number of appointments per page
 
@@ -11,7 +13,6 @@ export default function ViewAppointments() {
   const { userState } = useAuthContext();
   const { user_id } = userState;
   const [currentPage, setCurrentPage] = useState(0);
-
   const {
     data: providerAppointments,
     isLoading,
@@ -21,7 +22,7 @@ export default function ViewAppointments() {
     queryFn: () => fetchProviderAppointments({ provider_id: user_id }),
     queryKey: ["provider_appointments", user_id],
   });
-
+  const navigate = useNavigate();
   const handleCancel = async (appointmentId) => {
     try {
       await axios.post(
@@ -40,6 +41,21 @@ export default function ViewAppointments() {
     } catch (e) {
       console.error("Error cancelling appointment:", e);
       alert("Failed to cancel appointment. Please try again.");
+    }
+  };
+
+  const handleViewDocuments = (documents) => {
+    // Show documents in an alert or modal for simplicity
+    if (documents && documents.length > 0) {
+      const documentLinks = documents
+        .map(
+          (doc) =>
+            `<a href="${doc.file_url}" target="_blank">${doc.file_name}</a>`
+        )
+        .join("<br>");
+      alert(`Patient Documents:\n\n${documentLinks}`);
+    } else {
+      alert("No documents available for this appointment.");
     }
   };
 
@@ -85,7 +101,7 @@ export default function ViewAppointments() {
               {appointment["Patient.first_name"]}
             </div>
 
-            {/* Date, Time, and Cancel Button */}
+            {/* Date, Time, Cancel Button, and Documents Icon */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-2 space-y-2 md:space-y-0">
               <div className="text-sm md:text-base text-gray-600 font-bold ">
                 {
@@ -97,15 +113,31 @@ export default function ViewAppointments() {
               </div>
 
               {appointment.status !== "Cancelled" && (
-                <button
-                  className="py-1 px-3 bg-purple-500 text-white rounded-md text-sm md:text-base hover:bg-purple-600"
-                  onClick={() => handleCancel(appointment.appointment_id)}
-                >
-                  Cancel
-                </button>
+                <div className="flex items-center gap-4">
+                  <button
+                    className="py-1 px-3 bg-purple-500 text-white rounded-md text-sm md:text-base hover:bg-purple-600"
+                    onClick={() => handleCancel(appointment.appointment_id)}
+                  >
+                    Cancel
+                  </button>
+
+                  {/* View Documents Icon */}
+                </div>
               )}
             </div>
-
+            <button
+              className="text-blue-500 hover:text-blue-700"
+              title="View Documents"
+              onClick={() =>
+                navigate("/patientDocuments", {
+                  state: {
+                    patient_id: appointment.patient_id,
+                  },
+                })
+              }
+            >
+              <FaFileAlt size={20} />
+            </button>
             {/* Appointment Status */}
             <div className="absolute top-2 right-2 bg-blue-100 text-blue-500 text-xs md:text-sm px-3 py-1 rounded-md font-semibold">
               {appointment.status}

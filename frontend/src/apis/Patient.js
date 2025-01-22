@@ -26,4 +26,20 @@ async function uploadPatientFile(formData) {
     throw new Error(e);
   }
 }
-export { getPatientProfile, uploadPatientFile };
+async function getPatientDocuments({ patient_id, user_id, token }) {
+  try {
+    const response = await axios.get(
+      `${process.env.REACT_APP_SERVER_URL}/hospitalProvider/patientDocuments?user_id=${user_id}&patient_id=${patient_id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(response.data);
+    return response.data;
+  } catch (e) {
+    throw new Error(e);
+  }
+}
+export { getPatientProfile, uploadPatientFile, getPatientDocuments };
