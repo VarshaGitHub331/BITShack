@@ -9,6 +9,7 @@ const uploadDocument = async (req, res, next) => {
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: "PatientDocs", // Save in Cloudinary folder
       resource_type: "raw", // Upload as raw file (non-image)
+      access_mode: "public", // Ensure public access to the document
     });
 
     // Save Cloudinary URL in request object to use in further processing

@@ -58,11 +58,15 @@ patientRouter.post(
     }
 
     try {
+      // Extract the filename from Multer's req.file
+      const fileName = req.file?.originalname || "unknown";
+      console.log("THE FILE NAME IS ", fileName);
       // Save the uploaded document reference to your database
       const uploadedDocument = await Patient_Documents.create({
         patient_id: user_id,
         record: req.documentUrl,
         record_type,
+        file_name: fileName, // Save the filename in your database
       });
 
       // Fetch FHIR patient resource
@@ -95,6 +99,7 @@ patientRouter.post(
           {
             attachment: {
               url: req.documentUrl,
+              title: fileName, // Add the filename as the title
             },
           },
         ],

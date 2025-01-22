@@ -38,6 +38,7 @@ router.get(
       console.log(token);
       jwt.verify(token, SECRET_KEY, (err, user) => {
         if (err) {
+          console.log("error verifying");
           return res.status(403).send("Invalid token.");
         }
         console.log(user);
