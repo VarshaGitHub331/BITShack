@@ -15,6 +15,8 @@ import ViewProviderAppointments from "./pages/ViewProviderAppointments/ViewProvi
 import Dashboard from "./pages/LocationDashboard/LocationDashboard.jsx";
 import HospitalMap from "./pages/LocationDashboard/LocateHospital.jsx";
 import Login from "./pages/Login/Login.jsx";
+import HospitalAdmin from "./pages/Dashboard/HospitalAdminDashboard.jsx";
+import PatientDashboard from "./pages/Dashboard/HospitalPatientDashboard.jsx";
 function App() {
   const Layout = () => {
     return (
@@ -27,7 +29,7 @@ function App() {
           <NavBar />
 
           {/* Page Content */}
-          <div className="flex-grow p-6 bg-gray-100">
+          <div className="flex-grow overflow-auto mb-2 p-6 bg-gray-100">
             <Outlet />
           </div>
 
@@ -94,6 +96,14 @@ function App() {
         {
           path: "/login",
           element: <Login />,
+        },
+        {
+          path: "/adminDashboard",
+          element: <HospitalAdmin />,
+        },
+        {
+          path: "/patientDashboard",
+          element: <PatientDashboard />,
         },
       ],
     },

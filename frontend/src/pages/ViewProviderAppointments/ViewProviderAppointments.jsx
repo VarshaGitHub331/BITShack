@@ -2,10 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProviderAppointments } from "../../apis/appointment";
 import { useAuthContext } from "../../contexts/AuthContext";
 import axios from "axios";
+import ReactPaginate from "react-paginate";
+import { useState } from "react";
+
+const ITEMS_PER_PAGE = 5; // Number of appointments per page
 
 export default function ViewAppointments() {
   const { userState } = useAuthContext();
   const { user_id } = userState;
+  const [currentPage, setCurrentPage] = useState(0);
 
   const {
     data: providerAppointments,
@@ -38,6 +43,17 @@ export default function ViewAppointments() {
     }
   };
 
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Paginated data
+  const offset = currentPage * ITEMS_PER_PAGE;
+  const currentPageAppointments = providerAppointments?.slice(
+    offset,
+    offset + ITEMS_PER_PAGE
+  );
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -59,7 +75,7 @@ export default function ViewAppointments() {
     <>
       <div className="text-purple-500 text-md mb-4">My Appointments</div>
       <div className="flex flex-col w-full h-screen md:w-3/4">
-        {providerAppointments?.map((appointment) => (
+        {currentPageAppointments?.map((appointment) => (
           <div
             key={appointment.id}
             className="relative flex flex-col border border-slate-300 bg-white py-4 px-4 rounded-lg mb-4"
@@ -96,6 +112,25 @@ export default function ViewAppointments() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Pagination Component */}
+      <div className="mt-6 flex justify-center">
+        <ReactPaginate
+          previousLabel={"Previous"}
+          nextLabel={"Next"}
+          breakLabel={"..."}
+          pageCount={Math.ceil(providerAppointments.length / ITEMS_PER_PAGE)}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={3}
+          onPageChange={handlePageChange}
+          containerClassName={"flex items-center gap-2"}
+          activeClassName={"bg-blue-500 text-white rounded px-2"}
+          pageClassName={"px-2 py-1 border rounded"}
+          previousClassName={"px-3 py-1 border rounded bg-gray-200"}
+          nextClassName={"px-3 py-1 border rounded bg-gray-200"}
+          disabledClassName={"opacity-50 cursor-not-allowed"}
+        />
       </div>
     </>
   );

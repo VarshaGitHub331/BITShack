@@ -43,7 +43,7 @@ const ProviderCard = ({ provider }) => {
           className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
           onClick={(e) => {
             navigate(
-              `/hospitalLocation?lat=${Hospital.latitude}&lng=${Hospital.longitude}`
+              `/hospitalLocation?lat=${Hospital.latitude}&lng=${Hospital.longitude}&name=${Hospital.hospital_name}`
             );
           }}
         >

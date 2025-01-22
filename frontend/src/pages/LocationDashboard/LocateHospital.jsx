@@ -7,18 +7,18 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import axios from "axios";
 import { useAuthContext } from "../../contexts/AuthContext";
 import { useSearchParams } from "react-router-dom";
+
 const HospitalMap = () => {
   const [searchParams] = useSearchParams();
   const hospitalLatitude = searchParams.get("lat");
   const hospitalLongitude = searchParams.get("lng");
-  const [hospitalLocation, setHospitalLocation] = useState({});
+  const hospitalName = searchParams.get("name") || "Hospital";
+
+  const [hospitalLocation, setHospitalLocation] = useState(null);
   const [location, setLocation] = useState({
     lat: 13.3410096,
     lng: 74.7472785,
   }); // Default location
-  const [radius, setRadius] = useState(10); // Default radius (in kilometers)
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const { userState } = useAuthContext();
   const { user_id } = userState;
   const [usePatientLocation, setUsePatientLocation] = useState(false);
@@ -30,21 +30,24 @@ const HospitalMap = () => {
     iconSize: [25, 41],
     iconAnchor: [12, 41],
   });
+
+  // Fetch patient's saved location or use current location
   useEffect(() => {
     async function getPatientLocation() {
-      const resultLocation = await axios.get(
-        `${process.env.REACT_APP_SERVER_URL}/patient/fetchLocation?user_id=${user_id}`
-      );
-      console.log(resultLocation);
-      setLocation((location) => {
-        return {
+      try {
+        const resultLocation = await axios.get(
+          `${process.env.REACT_APP_SERVER_URL}/patient/fetchLocation?user_id=${user_id}`
+        );
+        setLocation({
           lat: resultLocation.data.latitude,
           lng: resultLocation.data.longitude,
-        };
-      });
+        });
+      } catch (e) {
+        console.error("Error fetching patient location:", e);
+      }
     }
-    // Try to fetch current location
-    if (usePatientLocation == "current") {
+
+    if (usePatientLocation === "current") {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -55,74 +58,61 @@ const HospitalMap = () => {
           },
           (error) => {
             console.error("Error fetching geolocation:", error);
-            setError("Unable to retrieve your location.");
           }
         );
       } else {
-        setError("Geolocation is not supported by this browser.");
+        console.error("Geolocation is not supported by this browser.");
       }
-    } else {
-      try {
-        getPatientLocation();
-      } catch (e) {
-        console.log(e);
-      }
+    } else if (usePatientLocation === "home") {
+      getPatientLocation();
     }
   }, [usePatientLocation, user_id]);
+
+  // Set hospital location from query parameters
   useEffect(() => {
-    setHospitalLocation(() => {
-      return { lat: hospitalLatitude, lng: hospitalLongitude };
-    });
+    if (hospitalLatitude && hospitalLongitude) {
+      setHospitalLocation({
+        lat: parseFloat(hospitalLatitude),
+        lng: parseFloat(hospitalLongitude),
+      });
+    } else {
+      console.warn("Invalid hospital coordinates.");
+    }
   }, [hospitalLatitude, hospitalLongitude]);
+
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       <div style={{ flex: 1, height: "100%" }}>
-        {loading ? (
-          <p>Loading...</p>
-        ) : error ? (
-          <p style={{ color: "red" }}>{error}</p>
-        ) : (
-          <MapContainer
-            center={location}
-            zoom={13}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            <RecenterMap location={location} />
-            {location && (
-              <Marker position={location} icon={defaultIcon}>
-                <Popup>
-                  <b>Your Location</b>
-                </Popup>
-              </Marker>
-            )}
-            {hospitalLocation && (
-              <Marker position={hospitalLocation} icon={defaultIcon}>
-                <Popup>
-                  <b>Your Location</b>
-                </Popup>
-              </Marker>
-            )}
-          </MapContainer>
-        )}
+        <MapContainer
+          center={location}
+          zoom={13}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <RecenterMap location={location} />
+          {/* User Location Marker */}
+          <Marker position={location} icon={defaultIcon}>
+            <Popup>
+              <b>Your Location</b>
+            </Popup>
+          </Marker>
+          {/* Hospital Location Marker */}
+          {hospitalLocation && (
+            <Marker position={hospitalLocation} icon={defaultIcon}>
+              <Popup>
+                <b>{hospitalName}</b>
+              </Popup>
+            </Marker>
+          )}
+        </MapContainer>
       </div>
       <div
         className="flex flex-col justify-center items-center space-y-6 bg-purple-400 bg-opacity-75 text-white p-8 shadow-lg rounded-l-lg"
         style={{ width: "300px" }}
       >
-        <div className="w-full">
-          <label className="block mb-2 font-medium">Radius (km):</label>
-          <input
-            type="number"
-            value={radius}
-            onChange={(e) => setRadius(e.target.value)}
-            min="1"
-            className="w-full p-2 rounded-md border-none text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-300"
-          />
-        </div>
         <div className="w-full">
           <label className="block mb-2 font-medium">Search From:</label>
           <select

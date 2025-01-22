@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useAuthContext } from "../../contexts/AuthContext";
 import axios from "axios";
+import { QueryClient } from "@tanstack/react-query";
 function CreateTimeSlot() {
+  const queryClient = new QueryClient();
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -28,6 +30,7 @@ function CreateTimeSlot() {
         }
       );
       setSubmitting(false);
+      queryClient.invalidateQueries(["timeslots"]);
       console.log("Time Slot Created");
     } catch (e) {
       console.log(e);

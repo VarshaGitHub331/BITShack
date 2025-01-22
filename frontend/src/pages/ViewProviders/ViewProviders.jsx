@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchProviders } from "../../apis/Hospital";
 import ProviderCard from "../../components/ProviderCard/ProviderCard";
 import ReactPaginate from "react-paginate";
-import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+
 const ITEMS_PER_PAGE = 6; // Number of items per page
 
 const ViewProviders = () => {
@@ -20,10 +20,19 @@ const ViewProviders = () => {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [category, setCategory] = useState("");
-  const [loading, setLoading] = useState(true);
-  // Paginated data
+
+  // Filter providers based on the category
+  const displayProviders = useMemo(() => {
+    if (!category) return providers || [];
+    return providers?.filter((provider) =>
+      provider.specialization.toLowerCase().includes(category.toLowerCase())
+    );
+  }, [providers, category]);
+
+  // Pagination logic applied to filtered providers
+  const pageCount = Math.ceil(displayProviders.length / ITEMS_PER_PAGE);
   const offset = currentPage * ITEMS_PER_PAGE;
-  const currentPageProviders = providers?.slice(
+  const currentPageProviders = displayProviders.slice(
     offset,
     offset + ITEMS_PER_PAGE
   );
@@ -31,17 +40,13 @@ const ViewProviders = () => {
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
   };
-  const displayProviders = useMemo(() => {
-    if (!category) return providers;
-    return providers?.filter((provider) =>
-      provider.specialization.toLowerCase().includes(category.toLowerCase())
-    );
-  }, [providers, category]);
 
   if (isLoading) return <div>Loading providers...</div>;
   if (error) return <div>Error fetching providers.</div>;
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
+      {/* Search Input */}
       <div className="relative w-full mb-4 md:w-1/2">
         <input
           className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-200"
@@ -60,19 +65,20 @@ const ViewProviders = () => {
         />
       </div>
 
+      {/* Providers Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayProviders?.map((provider) => (
+        {currentPageProviders.map((provider) => (
           <ProviderCard key={provider.provider_id} provider={provider} />
         ))}
       </div>
 
-      {/* Pagination Component */}
+      {/* Pagination */}
       <div className="mt-6 flex justify-center">
         <ReactPaginate
           previousLabel={"Previous"}
           nextLabel={"Next"}
           breakLabel={"..."}
-          pageCount={Math.ceil(displayProviders.length / ITEMS_PER_PAGE)}
+          pageCount={pageCount}
           marginPagesDisplayed={2}
           pageRangeDisplayed={3}
           onPageChange={handlePageChange}

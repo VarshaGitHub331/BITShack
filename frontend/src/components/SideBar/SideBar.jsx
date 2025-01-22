@@ -25,19 +25,32 @@ function SideBar({ setOpenSidebar }) {
       {/* Sidebar Links */}
       <ul className="space-y-4  text-purple-600">
         {/* Dashboard for everyone */}
-        <li>
-          <Link
-            to="/dashboard"
-            className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
-          >
-            <FontAwesomeIcon icon={faBook} className="h-4 w-4" />
-            Dashboard
-          </Link>
-        </li>
 
         {/* Conditional Links for Hospital Providers */}
+        {role === "Hospital_User" && (
+          <>
+            <li>
+              <Link
+                to="/adminDashboard"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faBook} className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </li>
+          </>
+        )}
         {role === "Hospital_Provider" && (
           <>
+            <li>
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faBook} className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </li>
             <li>
               <Link
                 to="/create-timeslot"
@@ -67,8 +80,18 @@ function SideBar({ setOpenSidebar }) {
             </li>
           </>
         )}
+
         {role === "Patient" && (
           <>
+            <li>
+              <Link
+                to="/patientDashboard"
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faBook} className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </li>
             <li>
               <Link
                 to="/view-providers"
