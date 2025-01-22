@@ -1,10 +1,17 @@
-const { Hospital_User } = require("../utils/InitializeModels");
-const { Hospital, User } = require("../utils/InitializeModels");
+const {
+  Hospital,
+  User,
+  Hospital_Provider,
+  Time_Slots,
+  Hospital_User,
+  Appointment,
+} = require("../utils/InitializeModels");
 const jwt = require("jsonwebtoken");
 const SECRET_KEY = "bitsnpieces"; // Replace with a secure key
 const getGeocoding = require("../utils/Gecoding.js");
 const { Sequelize } = require("../models");
 const { Op } = require("sequelize");
+
 const registerHospital = async (req, res, next) => {
   const { hospital_name, details, hospital_regno } = req.body;
   try {
@@ -154,10 +161,76 @@ const getNearByHospitals = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+const getProvidersAppointments = async (req, res, next) => {
+  try {
+    const { name } = req.query;
+    const hospital = await Hospital.findOne({
+      attributes: ["hospital_id"],
+      where: {
+        hospital_name: name,
+      },
+    });
+    const providers = await Hospital_Provider.findAll({
+      attributes: ["provider_id"],
+      where: {
+        hospital_id: hospital.hospital_id,
+      },
+      raw: true,
+    });
+    const providerIds = providers.map((provider) => provider.provider_id);
+    const timeSlots = await Time_Slots.findAll({
+      where: { provider: { [Sequelize.Op.in]: providerIds } },
+      raw: true,
+    });
+    const timeSlotIds = timeSlots.map((timeSlot) => timeSlot.slot_id);
+    const appointments = await Appointment.findAll({
+      where: {
+        slot_id: { [Sequelize.Op.in]: timeSlotIds },
+      },
+      order: [["createdAt", "ASC"]],
+
+      raw: true,
+    });
+    let Patients = [];
+    console.log(appointments);
+    Patients = appointments.map(
+      (appointment) =>
+        !Patients.find((patientId) => patientId == appointment.patient_id) && [
+          ...Patients,
+          appointment.patient_id,
+        ]
+    );
+    for (appointment of appointments) {
+      const time_slot_id = appointment.slot_id;
+      const TimeSlot = await Time_Slots.findOne({
+        where: { slot_id: time_slot_id },
+        raw: true,
+      });
+      const provider = await Hospital_Provider.findOne({
+        where: {
+          provider_id: TimeSlot.provider,
+        },
+        raw: true,
+      });
+      appointment.provider_name = provider.provider_name;
+      appointment.date = TimeSlot.slot_date;
+    }
+    console.log(Patients);
+    console.log(appointments);
+    console.log(providers);
+    return res.status(200).json({
+      details: { providers: providers, appointments, Patients },
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
 module.exports = {
   registerHospital,
   addLocation,
   createAdminUser,
   getHospitals,
   getNearByHospitals,
+  getProvidersAppointments,
 };

@@ -519,6 +519,40 @@ const fetchProviderAppointments = async (req, res, next) => {
     console.log(e);
   }
 };
+const fetchPatientDocuments = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    if (userId != req.query.user_id) {
+      return res
+        .status(403)
+        .send("You are not authorized to view these documents.");
+    }
+    const { patient_id } = req.query;
+    const patientResource = await Patient_Resource.findOne({
+      where: { patient_id },
+    });
+    const patient_fhir_resource_id = patientResource.patient_fhir_resource_id;
+    const fhirUrl = `https://fhir.simplifier.net/BITS-HACK/DocumentReference?subject=Patient/${patient_fhir_resource_id}`;
+
+    // Send the GET request to fetch the documents
+    const response = await axios.get(fhirUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.SIMPLIFIER_TOKEN}`, // Replace with your access token
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Check if there are documents in the response
+    if (response.data && response.data.entry) {
+      const documents = response.data.entry.map((entry) => entry.resource);
+      return res.status(200).json(documents);
+    } else {
+      return []; // No documents found
+    }
+  } catch (e) {
+    next(e);
+  }
+};
 module.exports = {
   registerHospitalProvider,
   createTimeSlots,
@@ -529,4 +563,5 @@ module.exports = {
   fetchProviders,
   deleteTimeSlots,
   fetchProviderAppointments,
+  fetchPatientDocuments,
 };

@@ -1,4 +1,5 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const {
   registerHospitalProvider,
   createTimeSlots,
@@ -9,8 +10,9 @@ const {
   fetchProviders,
   deleteTimeSlots,
   fetchProviderAppointments,
+  fetchPatientDocuments,
 } = require("../controllers/HospitalProvidersController");
-
+const SECRET_KEY = "bitsnpieces"; // Replace with a secure key
 const router = express.Router();
 
 // Register a new hospital provider
@@ -24,4 +26,28 @@ router.post("/bookAppointment", bookAppointment);
 router.post("/confirmAppointment", confirmAppointment);
 router.delete("/deleteTimeSlots", deleteTimeSlots);
 router.get("/fetchProviderAppointments", fetchProviderAppointments);
+router.get(
+  "/patientDocuments",
+  async (req, res, next) => {
+    try {
+      console.log(req.headers);
+      const token = req.headers["authorization"].split(" ")[1];
+      if (!token) {
+        return res.status(403).json("Token is missing");
+      }
+      console.log(token);
+      jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+          return res.status(403).send("Invalid token.");
+        }
+        console.log(user);
+        req.user = user; // Attach the user information to the request object
+        next();
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+  fetchPatientDocuments
+);
 module.exports = router;

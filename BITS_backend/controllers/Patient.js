@@ -7,6 +7,7 @@ const {
   Hospital,
   Hospital_Provider,
 } = require("../utils/InitializeModels");
+
 const axios = require("axios");
 const getGeocoding = require("../utils/Gecoding");
 const registerPatient = async (req, res, next) => {
@@ -162,9 +163,23 @@ const getPatientLocation = async (req, res, next) => {
     next(e);
   }
 };
+const getPatientProfile = async (req, res, next) => {
+  const { user_id } = req.query;
+  try {
+    const patientDetails = await Patient.findOne({
+      where: {
+        user_id,
+      },
+    });
+    res.status(200).json(patientDetails);
+  } catch (e) {
+    next(e);
+  }
+};
 module.exports = {
   registerPatient,
   addLocation,
   fetchAppointments,
   getPatientLocation,
+  getPatientProfile,
 };

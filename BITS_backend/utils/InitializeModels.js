@@ -11,6 +11,7 @@ const {
   Appointment,
   Appointment_Encounter,
   Provider_Resource,
+  Patient_Documents,
 } = models; // Ensure you're destructuring correctly from the imported models
 const sequelize = models.sequelize;
 
@@ -43,4 +44,5 @@ module.exports = {
   Appointment,
   Appointment_Encounter,
   Provider_Resource,
+  Patient_Documents,
 };
