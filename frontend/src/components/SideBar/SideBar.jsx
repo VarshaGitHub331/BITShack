@@ -9,11 +9,13 @@ import { useAuthContext } from "../../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
+import { faFileAlt } from "@fortawesome/free-solid-svg-icons"; // Document icon
 
 function SideBar({ setOpenSidebar }) {
   const { userState, UserLogin, UserLogout } = useAuthContext();
   const { role, name } = userState;
-
+  const navigate = useNavigate();
   return (
     <div className="h-full w-64 bg-gray-300 bg-opacity-40 backdrop-blur-lg fixed top-0 right-0 rounded-md shadow-lg py-4 px-6 flex flex-col text-left space-y-4">
       {/* Header Section */}
@@ -127,6 +129,21 @@ function SideBar({ setOpenSidebar }) {
                 <FontAwesomeIcon icon={faLocationDot} className="h-4 w-4" />
                 Location
               </Link>
+            </li>
+            <li>
+              <li
+                onClick={() =>
+                  navigate("/patientDocuments", {
+                    state: {
+                      patient_id: userState.user_id,
+                    },
+                  })
+                }
+                className="flex items-center gap-2 text-md hover:underline p-2 rounded transition"
+              >
+                <FontAwesomeIcon icon={faFileAlt} />
+                Documents
+              </li>
             </li>
           </>
         )}

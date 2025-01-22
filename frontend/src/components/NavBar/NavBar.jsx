@@ -19,12 +19,20 @@ export default function NavBar() {
       <nav className="bg-white text-purple-500">
         <div className="container mx-auto px-6 py-6 flex justify-between items-center">
           {/* Logo */}
-          <div className="text-xl font-bold">MediCare</div>
+          <div
+            className="text-xl font-bold"
+            style={{ cursor: "pointer" }}
+            onClick={(e) => {
+              navigate("/");
+            }}
+          >
+            MediCare
+          </div>
 
           {/* Desktop Menu */}
           <ul className="flex space-x-6">
             {/* Links visible only on medium screens and above */}
-            <Link to="/">
+            <Link to="/" style={{ cursor: "pointer" }}>
               <li className="hidden md:block hover:text-purple-500 cursor-pointer">
                 Home
               </li>
@@ -53,7 +61,7 @@ export default function NavBar() {
                       <Link to="/providerRegister">Provider</Link>
                     </li>
                     <li className="hover:text-purple-500 cursor-pointer">
-                      <Link to="/hospitalRegister">Hospital Admin</Link>
+                      <Link to="/hospitalRegister">Hospital</Link>
                     </li>
                   </ul>
                 )}
@@ -78,7 +86,7 @@ export default function NavBar() {
                       <Link to="/login?role=Provider">Provider</Link>
                     </li>
                     <li className="hover:text-purple-500 cursor-pointer">
-                      <Link to="/login?role=Admin">Hospital Admin</Link>
+                      <Link to="/login?role=Admin">Hospital</Link>
                     </li>
                   </ul>
                 )}
